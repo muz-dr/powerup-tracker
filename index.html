@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Health &amp; Nutrition Dashboard</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#06b6d4">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW registered!'))
+        .catch(err => console.log('SW failed: ', err));
+    });
+  }
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #06b6d4;
+            --primary-hover: #0891b2;
+            --accent: #d946ef;
+            --bg: #0b0f19;
+            --card: #111827;
+            --card-header: #1f2937;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 70%);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 30px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        h1 { 
+            margin: 0; 
+            color: #fff; 
+            font-size: 2.2rem; 
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 { 
+            color: #fff; 
+            font-size: 1.25rem; 
+            margin-top: 0; 
+            margin-bottom: 18px; 
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        h3 { color: #e5e7eb; font-size: 1.05rem; margin-top: 15px; margin-bottom: 10px; font-weight: 600;}
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        @media (min-width: 768px) {
+            .grid { grid-template-columns: 1fr 1fr; }
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        @media (min-width: 768px) {
+            .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -5px rgba(0,0,0,0.6);
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            color: #fff;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+            background-color: rgba(15, 23, 42, 0.9);
+        }
+        .btn {
+            background: linear-gradient(135deg, var(--primary), #0891b2);
+            color: #fff;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.2s;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+        }
+        .btn:hover { 
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(6, 182, 212, 0.4);
+        }
+        .btn:active { transform: translateY(1px); }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #4b5563, #374151);
+            color: #fff;
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+            padding: 10px 16px;
+        }
+        .btn-outline:hover {
+            background: rgba(6, 182, 212, 0.1);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.1);
+        }
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            box-shadow: none;
+        }
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent), #c084fc);
+            box-shadow: 0 4px 12px rgba(217, 70, 239, 0.25);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 6px 16px rgba(217, 70, 239, 0.45);
+        }
+        .action-buttons { 
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .inline-btn { width: auto; padding: 10px 16px; font-size: 0.85rem; border-radius: 8px; }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chart-select {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        .normal { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .warning { background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .danger { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        
+        .table-container {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.4);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: transparent;
+        }
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        th {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid var(--border);
+        }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+        tr:last-child td { border-bottom: none; }
+        
+        .action-cell {
+            text-align: center;
+            white-space: nowrap;
+        }
+        .btn-row-action {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .btn-row-edit { color: var(--primary); }
+        .btn-row-edit:hover { background-color: rgba(6, 182, 212, 0.15); }
+        .btn-row-delete { color: var(--danger); }
+        .btn-row-delete:hover { background-color: rgba(239, 68, 68, 0.15); }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .prompt-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #22d3ee;
+            white-space: pre-wrap;
+            position: relative;
+            margin-top: 10px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .copy-tag {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #1f2937;
+            color: var(--text);
+            padding: 4px 10px;
+            font-family: sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .copy-tag:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .chart-container {
+            position: relative;
+            height: 260px;
+            width: 100%;
+        }
+        
+        /* Goal Feedback Classes */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .status-good { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-over { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .status-under { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+        
+        /* Modal System CSS */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(6px);
+        }
+        .modal-content {
+            background-color: var(--card);
+            margin: 8% auto;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 520px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.7);
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⚡ PowerUp Track</h1>
+        <div class="action-buttons">
+            <button class="btn btn-outline inline-btn" onclick="exportData()">💾 Export (CSV)</button>
+            <div class="file-input-wrapper">
+                <button class="btn btn-outline inline-btn">📤 Import (CSV)</button>
+                <input type="file" id="csvImport" accept=".csv" onchange="importData(this)">
+            </div>
+            <button class="btn btn-danger inline-btn" onclick="clearAllData()">🗑️ Reset</button>
+        </div>
+    </header>
+    
+    <div class="card" style="border-left: 4px solid var(--accent);">
+        <h2>🎯 Target Profiles &amp; Baselines</h2>
+        <div class="grid-3">
+            <div class="form-group">
+                <label for="targetCalories">Calorie Ceiling (kcal)</label>
+                <input type="number" id="targetCalories" value="2000" onchange="saveGoals()">
+            </div>
+            <div class="form-group">
+                <label for="targetProtein">Protein Floor Goal (g)</label>
+                <input type="number" id="targetProtein" value="120" onchange="saveGoals()">
+            </div>
+            <div class="form-group">
+                <label for="targetSodium">Sodium Cap (mg)</label>
+                <input type="number" id="targetSodium" value="2300" onchange="saveGoals()">
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid">
+        <div class="card">
+            <h2>⚖️ BMI Tracking</h2>
+            <form id="bmiForm">
+                <div class="form-group">
+                    <label for="bmiDate">Date</label>
+                    <input type="date" id="bmiDate" required>
+                </div>
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 0;">
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" step="0.1" placeholder="72.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" step="0.1" placeholder="175" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn" id="bmiSubmitBtn">Calculate &amp; Save</button>
+            </form>
+            <div id="bmiResult" class="result" style="display:none;"></div>
+            
+            <h3>Weight &amp; BMI Log</h3>
+            <div class="table-container">
+                <table id="bmiTable">
+                    <thead>
+                        <tr><th>Date</th><th>Weight</th><th>Height</th><th>BMI</th><th style="width: 80px; text-align: center;">Actions</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🥑 Daily Intake &amp; Activity Log</h2>
+            <form id="diaryForm">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0;">
+                    <div class="form-group">
+                        <label for="logDate">Date</label>
+                        <input type="date" id="logDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="calories">Calories (kcal)</label>
+                        <input type="number" id="calories" placeholder="2100" required>
+                    </div>
+                </div>
+                <div class="grid-3" style="gap: 10px; margin-bottom: 0;">
+                    <div class="form-group">
+                        <label for="protein">Protein (g)</label>
+                        <input type="number" id="protein" placeholder="130" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carbs">Carbs (g)</label>
+                        <input type="number" id="carbs" placeholder="220" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fat">Fat (g)</label>
+                        <input type="number" id="fat" placeholder="70" required>
+                    </div>
+                </div>
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="sodium">Sodium (mg)</label>
+                        <input type="number" id="sodium" placeholder="1800" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="steps">Steps Count</label>
+                        <input type="number" id="steps" placeholder="10000" value="0" required>
+                    </div>
+                </div>
+                
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 0;">
+                    <button type="button" class="btn btn-glow" onclick="openGeminiModal()">🤖 Auto-Fill via Gemini</button>
+                    <button type="submit" class="btn" id="diarySubmitBtn">Log Day Metrics</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--primary);">
+        <h2>📝 Nutrition &amp; Metabolic History</h2>
+        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: rgba(15, 23, 42, 0.4);">
+            <table id="diaryTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Calories (Intake)</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fat</th>
+                        <th>Sodium</th>
+                        <th>Steps Logged</th>
+                        <th>Estimated Burn</th>
+                        <th style="width: 80px; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="chart-header">
+            <h2>📈 Unified Trend Analytics</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <select id="timeRange" class="chart-select" onchange="updateCharts()">
+                    <option value="7">Weekly View</option>
+                    <option value="30" selected>Monthly View</option>
+                    <option value="365">Yearly View</option>
+                </select>
+                <select id="chartPicker" class="chart-select" onchange="toggleChartLayout()">
+                    <option value="all">Display All Charts</option>
+                    <option value="bmi">BMI Trends Only</option>
+                    <option value="calorie">Calorie Intake Only</option>
+                    <option value="steps">Steps &amp; Active Burn Only</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid" id="chartsContainerGrid">
+            <div class="card chart-wrapper-card" id="bmiChartWrapper" style="margin-bottom:0; background: rgba(15, 23, 42, 0.5);">
+                <h3>BMI Timeline</h3>
+                <div class="chart-container">
+                    <canvas id="bmiChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-wrapper-card" id="calorieChartWrapper" style="margin-bottom:0; background: rgba(15, 23, 42, 0.5);">
+                <h3>Caloric Density Intake</h3>
+                <div class="chart-container">
+                    <canvas id="calorieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card chart-wrapper-card" id="stepsChartWrapper" style="margin-bottom:0; grid-column: span 1; background: rgba(15, 23, 42, 0.5);">
+                <h3>Step Counts vs Calories Burned</h3>
+                <div class="chart-container">
+                    <canvas id="stepsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(145deg, rgba(17,24,39,0.9), rgba(30,27,75,0.4));">
+        <h2>💡 Gemini Nutrition Prompt Helper</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
+            Copy this layout engine parameter setup. When you trigger "Final Summary", Gemini gives you an easy-to-grab JSON container data code-box.
+        </p>
+        <div class="prompt-box" id="promptText">I will send you photos or descriptions of my breakfast, lunch, and dinner. Track them throughout the day. When I say "Final Summary", give me the calculated totals strictly inside a JSON code box structure using this exact layout so I can copy it directly into my tracking system:
+
+```json
+{
+  "calories": [Total],
+  "protein": [Total],
+  "carbs": [Total],
+  "fat": [Total],
+  "sodium": [Total]
+}
+```<div class="copy-tag" onclick="copyPromptText()">Copy Prompt</div></div>
+    </div>
+</div>
+
+<div id="geminiModal" class="modal">
+    <div class="modal-content">
+        <h2>🤖 Paste Gemini Code Box</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+            Drop the JSON content matrix anywhere inside the workspace console block below.
+        </p>
+        <textarea id="geminiPasteBox" rows="8" placeholder='Example:&#10;{&#10;  "calories": 1850,&#10;  "protein": 140,&#10;  "carbs": 190,&#10;  "fat": 65,&#10;  "sodium": 1500&#10;}'></textarea>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary inline-btn" onclick="closeGeminiModal()">Cancel</button>
+            <button class="btn btn-glow inline-btn" onclick="processGeminiResponse()">⚡ Fast Import</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global chart structural instances
+    let bmiChartInstance = null;
+    let calorieChartInstance = null;
+    let stepsChartInstance = null;
+
+    const KCAL_PER_STEP = 0.04;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('bmiDate').value = todayStr;
+    document.getElementById('logDate').value = todayStr;
+
+    // Fixed Lifecycle Handler: Load tables FIRST, then safely spin up charts
+    document.addEventListener('DOMContentLoaded', () => {
+        loadGoals();
+        renderBMITable();
+        renderDiaryTable();
+        initCharts();
+        toggleChartLayout();
+    });
+
+    // Gemini Auto-Fill Modal Logics
+    function openGeminiModal() {
+        document.getElementById('geminiPasteBox').value = '';
+        document.getElementById('geminiModal').style.display = 'block';
+    }
+
+    function closeGeminiModal() {
+        document.getElementById('geminiModal').style.display = 'none';
+    }
+
+    function processGeminiResponse() {
+        const rawText = document.getElementById('geminiPasteBox').value;
+        
+        try {
+            let cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(cleanText);
+            
+            if (data.calories === undefined || data.protein === undefined || data.carbs === undefined || data.fat === undefined || data.sodium === undefined) {
+                alert("The text you pasted doesn't match the expected layout format. Make sure all values are present.");
+                return;
+            }
+            
+            document.getElementById('calories').value = Math.round(data.calories);
+            document.getElementById('protein').value = Math.round(data.protein);
+            document.getElementById('carbs').value = Math.round(data.carbs);
+            document.getElementById('fat').value = Math.round(data.fat);
+            document.getElementById('sodium').value = Math.round(data.sodium);
+            
+            closeGeminiModal();
+            alert("⚡ Dashboard populated successfully! Don't forget to review and click 'Log Day Metrics' to save.");
+            
+        } catch (error) {
+            alert("Failed to read the input data. Make sure to copy the entire JSON bracket structure from Gemini.");
+        }
+    }
+
+    // Save and Load Automated Safeguard Parameters
+    function saveGoals() {
+        localStorage.setItem('tgt_cal', document.getElementById('targetCalories').value || 2000);
+        localStorage.setItem('tgt_prot', document.getElementById('targetProtein').value || 120);
+        localStorage.setItem('tgt_sod', document.getElementById('targetSodium').value || 2300);
+        renderDiaryTable();
+    }
+    
+    function loadGoals() {
+        document.getElementById('targetCalories').value = localStorage.getItem('tgt_cal') || 2000;
+        document.getElementById('targetProtein').value = localStorage.getItem('tgt_prot') || 120;
+        document.getElementById('targetSodium').value = localStorage.getItem('tgt_sod') || 2300;
+    }
+
+    function clearAllData() {
+        if (confirm("WARNING: This will permanently delete all your data metrics.\n\nAre you sure you want to completely reset?")) {
+            localStorage.clear();
+            loadGoals();
+            renderBMITable();
+            renderDiaryTable();
+            updateCharts();
+            document.getElementById('bmiResult').style.display = 'none';
+            alert("All system histories have been reset.");
+        }
+    }
+
+    function editBmiEntry(date) {
+        const bmiHistory = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+        const entry = bmiHistory.find(item => item.date === date);
+        if (entry) {
+            document.getElementById('bmiDate').value = entry.date;
+            document.getElementById('weight').value = entry.weight;
+            document.getElementById('height').value = entry.height;
+            document.getElementById('bmiSubmitBtn').innerText = "Update Entry";
+            document.getElementById('bmiForm').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function deleteBmiEntry(date) {
+        if (confirm(`Delete BMI entry for ${date}?`)) {
+            let bmiHistory = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+            bmiHistory = bmiHistory.filter(item => item.date !== date);
+            localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
+            renderBMITable();
+            updateCharts();
+            const resultDiv = document.getElementById('bmiResult');
+            if (resultDiv.innerText.includes(date)) resultDiv.style.display = 'none';
+        }
+    }
+
+    function editNutritionEntry(date) {
+        const diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+        const entry = diary.find(item => item.date === date);
+        if (entry) {
+            document.getElementById('logDate').value = entry.date;
+            document.getElementById('calories').value = entry.calories;
+            document.getElementById('protein').value = entry.protein;
+            document.getElementById('carbs').value = entry.carbs;
+            document.getElementById('fat').value = entry.fat;
+            document.getElementById('sodium').value = entry.sodium;
+            document.getElementById('steps').value = entry.steps || 0;
+            document.getElementById('diarySubmitBtn').innerText = "Update Log Data";
+            document.getElementById('diaryForm').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function deleteNutritionEntry(date) {
+        if (confirm(`Delete metrics log for ${date}?`)) {
+            let diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+            diary = diary.filter(item => item.date !== date);
+            localStorage.setItem('diaryHistory', JSON.stringify(diary));
+            renderDiaryTable();
+            updateCharts();
+        }
+    }
+
+    function copyPromptText() {
+        const textElement = document.getElementById('promptText');
+        const cleanText = textElement.innerText.replace("Copy Prompt", "").trim();
+        navigator.clipboard.writeText(cleanText).then(() => {
+            const tag = textElement.querySelector('.copy-tag');
+            tag.innerText = "Copied!";
+            tag.style.background = "#06b6d4"; tag.style.color = "#fff";
+            setTimeout(() => {
+                tag.innerText = "Copy Prompt";
+                tag.style.background = "#1f2937"; tag.style.color = "var(--text)";
+            }, 2000);
+        });
+    }
+
+    // BMI System Logic
+    document.getElementById('bmiForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('bmiDate').value;
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        
+        const heightInMeters = height / 100;
+        const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+        
+        let status = ''; let className = '';
+        if(bmi < 18.5) { status = 'Underweight'; className = 'warning'; }
+        else if(bmi < 25) { status = 'Normal'; className = 'normal'; }
+        else if(bmi < 30) { status = 'Overweight'; className = 'warning'; }
+        else { status = 'Obese'; className = 'danger'; }
+
+        const resultDiv = document.getElementById('bmiResult');
+        resultDiv.className = `result ${className}`;
+        resultDiv.innerText = `BMI for ${date}: ${bmi} (${status})`;
+        resultDiv.style.display = 'block';
+
+        let bmiHistory = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+        bmiHistory = bmiHistory.filter(item => item.date !== date);
+        bmiHistory.push({ date, weight, height, bmi: parseFloat(bmi) });
+        bmiHistory.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        localStorage.setItem('bmiHistory', JSON.stringify(bmiHistory));
+        
+        document.getElementById('bmiSubmitBtn').innerText = "Calculate & Save";
+        document.getElementById('bmiDate').value = todayStr;
+        document.getElementById('weight').value = '';
+        document.getElementById('height').value = '';
+        
+        renderBMITable();
+        updateCharts();
+    });
+
+    function renderBMITable() {
+        const history = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+        const sortedHistory = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
+        const tbody = document.querySelector('#bmiTable tbody');
+        tbody.innerHTML = sortedHistory.length ? sortedHistory.map(row => `
+            <tr>
+                <td>${row.date}</td>
+                <td style="font-weight: 600;">${row.weight} kg</td>
+                <td>${row.height} cm</td>
+                <td><span class="status-badge status-good" style="margin-top:0;">${row.bmi}</span></td>
+                <td class="action-cell">
+                    <button class="btn-row-action btn-row-edit" onclick="editBmiEntry('${row.date}')" title="Edit row">&#x270F;</button>
+                    <button class="btn-row-action btn-row-delete" onclick="deleteBmiEntry('${row.date}')" title="Delete row">&#x2715;</button>
+                </td>
+            </tr>
+        `).join('') : '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding: 15px;">No entries tracked yet</td></tr>';
+    }
+
+    // Diary & Activity System Engine
+    document.getElementById('diaryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const date = document.getElementById('logDate').value;
+        const calories = parseInt(document.getElementById('calories').value);
+        const protein = parseInt(document.getElementById('protein').value);
+        const carbs = parseInt(document.getElementById('carbs').value);
+        const fat = parseInt(document.getElementById('fat').value);
+        const sodium = parseInt(document.getElementById('sodium').value);
+        const steps = parseInt(document.getElementById('steps').value) || 0;
+
+        let diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+        diary = diary.filter(item => item.date !== date);
+        diary.push({ date, calories, protein, carbs, fat, sodium, steps });
+        diary.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        localStorage.setItem('diaryHistory', JSON.stringify(diary));
+        
+        document.getElementById('diarySubmitBtn').innerText = "Log Day Metrics";
+        document.getElementById('logDate').value = todayStr;
+        document.getElementById('calories').value = '';
+        document.getElementById('protein').value = '';
+        document.getElementById('carbs').value = '';
+        document.getElementById('fat').value = '';
+        document.getElementById('steps').value = '0';
+        document.getElementById('sodium').value = '';
+        
+        renderDiaryTable();
+        updateCharts();
+    });
+
+    function renderDiaryTable() {
+        const diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+        const sortedDiary = [...diary].sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        const limitCal = parseInt(document.getElementById('targetCalories').value) || 2000;
+        const floorProt = parseInt(document.getElementById('targetProtein').value) || 120;
+        const limitSod = parseInt(document.getElementById('targetSodium').value) || 2300;
+        
+        const tbody = document.querySelector('#diaryTable tbody');
+        tbody.innerHTML = sortedDiary.length ? sortedDiary.map(row => {
+            const calculatedBurn = (row.steps * KCAL_PER_STEP).toFixed(0);
+            
+            const calClass = row.calories > limitCal ? 'status-over' : 'status-good';
+            const calBadge = row.calories > limitCal ? '⚠️ OVER LIMIT' : '✓ SAFE ZONE';
+            
+            const protClass = row.protein >= floorProt ? 'status-good' : 'status-under';
+            const protBadge = row.protein >= floorProt ? '✓ TARGET MET' : '⚠️ LOW INTAKE';
+            
+            const sodClass = row.sodium > limitSod ? 'status-over' : 'status-good';
+            const sodBadge = row.sodium > limitSod ? '⚠️ HIGH SODIUM' : '✓ SAFE';
+
+            return `
+                <tr>
+                    <td>${row.date}</td>
+                    <td>
+                        <div style="font-weight: 700; color: #fff;">${row.calories} kcal</div>
+                        <span class="status-badge ${calClass}">${calBadge}</span>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600;">${row.protein} g</div>
+                        <span class="status-badge ${protClass}">${protBadge}</span>
+                    </td>
+                    <td>${row.carbs} g</td>
+                    <td>${row.fat} g</td>
+                    <td>
+                        <div>${row.sodium} mg</div>
+                        <span class="status-badge ${sodClass}">${sodBadge}</span>
+                    </td>
+                    <td style="font-weight: 600; color: #e9d5ff;">${row.steps.toLocaleString()}</td>
+                    <td style="color: #22d3ee; font-weight:700;">-${calculatedBurn} kcal</td>
+                    <td class="action-cell">
+                        <button class="btn-row-action btn-row-edit" onclick="editNutritionEntry('${row.date}')" title="Edit row">&#x270F;</button>
+                        <button class="btn-row-action btn-row-delete" onclick="deleteNutritionEntry('${row.date}')" title="Delete row">&#x2715;</button>
+                    </td>
+                </tr>
+            `;
+        }).join('') : '<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding: 20px;">No logs tracked yet. Use the entry fields above to start!</td></tr>';
+    }
+
+    // Dynamic Chart Layout Picker Engine
+    function toggleChartLayout() {
+        const pickerValue = document.getElementById('chartPicker').value;
+        const container = document.getElementById('chartsContainerGrid');
+        
+        const wBmi = document.getElementById('bmiChartWrapper');
+        const wCal = document.getElementById('calorieChartWrapper');
+        const wStp = document.getElementById('stepsChartWrapper');
+        
+        wBmi.style.display = "none";
+        wCal.style.display = "none";
+        wStp.style.display = "none";
+        container.style.gridTemplateColumns = "1fr";
+        wStp.style.gridColumn = "auto";
+
+        if (pickerValue === 'all') {
+            wBmi.style.display = "block";
+            wCal.style.display = "block";
+            wStp.style.display = "block";
+            wStp.style.gridColumn = "span 1";
+            if (window.innerWidth >= 768) {
+                container.style.gridTemplateColumns = "1fr 1fr";
+                wStp.style.gridColumn = "span 2"; 
+            }
+        } else if (pickerValue === 'bmi') {
+            wBmi.style.display = "block";
+        } else if (pickerValue === 'calorie') {
+            wCal.style.display = "block";
+        } else if (pickerValue === 'steps') {
+            wStp.style.display = "block";
+        }
+        
+        if(bmiChartInstance) bmiChartInstance.resize();
+        if(calorieChartInstance) calorieChartInstance.resize();
+        if(stepsChartInstance) stepsChartInstance.resize();
+    }
+
+    // Fixed Chart Configurations with fallback support for blank states
+    function initCharts() {
+        const ctxBmi = document.getElementById('bmiChart').getContext('2d');
+        const ctxCal = document.getElementById('calorieChart').getContext('2d');
+        const ctxStp = document.getElementById('stepsChart').getContext('2d');
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } }
+            }
+        };
+
+        bmiChartInstance = new Chart(ctxBmi, {
+            type: 'line',
+            data: { labels: ['No Data'], datasets: [{ data: [0], borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', tension: 0.3, fill: true }] },
+            options: { ...commonOptions, plugins: { legend: { display: false } } }
+        });
+
+        calorieChartInstance = new Chart(ctxCal, {
+            type: 'bar',
+            data: { labels: ['No Data'], datasets: [{ data: [0], backgroundColor: '#d946ef', borderRadius: 6, label: 'Intake (kcal)' }] },
+            options: { ...commonOptions, plugins: { legend: { display: false } } }
+        });
+
+        stepsChartInstance = new Chart(ctxStp, {
+            type: 'bar',
+            data: { 
+                labels: ['No Data'], 
+                datasets: [
+                    { data: [0], backgroundColor: '#a855f7', borderRadius: 6, label: 'Steps Taken', yAxisID: 'y' },
+                    { data: [0], backgroundColor: '#06b6d4', label: 'Est. Burn (kcal)', yAxisID: 'y1', type: 'line', borderColor: '#06b6d4', fill: false, tension: 0.2 }
+                ] 
+            },
+            options: {
+                ...commonOptions,
+                plugins: { legend: { labels: { color: '#fff', font: { weight: '600' } } } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
+                    y: { type: 'linear', position: 'left', grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' }, title: { display: true, text: 'Steps', color: '#c084fc' } },
+                    y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#9ca3af' }, title: { display: true, text: 'Calories Burned', color: '#22d3ee' } }
+                }
+            }
+        });
+
+        updateCharts();
+    }
+
+    // Safe Data Injection Matrix
+    function updateCharts() {
+        if (!bmiChartInstance || !calorieChartInstance || !stepsChartInstance) return;
+
+        const timeRangeDays = parseInt(document.getElementById('timeRange').value);
+
+        const bmiHistory = JSON.parse(localStorage.getItem('bmiHistory') || '[]').sort((a,b) => new Date(a.date) - new Date(b.date));
+        const diaryHistory = JSON.parse(localStorage.getItem('diaryHistory') || '[]').sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        const cutOffDate = new Date(); cutOffDate.setDate(cutOffDate.getDate() - timeRangeDays);
+
+        const filteredBmi = bmiHistory.filter(item => new Date(item.date) >= cutOffDate);
+        const filteredCal = diaryHistory.filter(item => new Date(item.date) >= cutOffDate);
+
+        // Update BMI Chart
+        if (filteredBmi.length > 0) {
+            bmiChartInstance.data.labels = filteredBmi.map(item => item.date);
+            bmiChartInstance.data.datasets[0].data = filteredBmi.map(item => item.bmi);
+        } else {
+            bmiChartInstance.data.labels = ['Waiting for data'];
+            bmiChartInstance.data.datasets[0].data = [0];
+        }
+        bmiChartInstance.update();
+
+        // Update Calories Intake Chart
+        if (filteredCal.length > 0) {
+            calorieChartInstance.data.labels = filteredCal.map(item => item.date);
+            calorieChartInstance.data.datasets[0].data = filteredCal.map(item => item.calories);
+        } else {
+            calorieChartInstance.data.labels = ['Waiting for data'];
+            calorieChartInstance.data.datasets[0].data = [0];
+        }
+        calorieChartInstance.update();
+
+        // Update Steps Chart
+        if (filteredCal.length > 0) {
+            stepsChartInstance.data.labels = filteredCal.map(item => item.date);
+            stepsChartInstance.data.datasets[0].data = filteredCal.map(item => item.steps || 0);
+            stepsChartInstance.data.datasets[1].data = filteredCal.map(item => ((item.steps || 0) * KCAL_PER_STEP).toFixed(0));
+        } else {
+            stepsChartInstance.data.labels = ['Waiting for data'];
+            stepsChartInstance.data.datasets[0].data = [0];
+            stepsChartInstance.data.datasets[1].data = [0];
+        }
+        stepsChartInstance.update();
+    }
+
+    // Global CSV Backup Export Pipeline
+    function exportData() {
+        const bmi = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+        const diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "TYPE,DATE,WEIGHT_KG,HEIGHT_CM,BMI_VAL,CALORIES_KCAL,PROTEIN_G,CARBS_G,FAT_G,SODIUM_MG,STEPS_COUNT\n";
+        
+        bmi.forEach(row => { csvContent += `BMI,${row.date},${row.weight},${row.height},${row.bmi},,,,,,\n`; });
+        diary.forEach(row => { csvContent += `NUTRITION,${row.date},,,,${row.calories},${row.protein},${row.carbs},${row.fat},${row.sodium},${row.steps || 0}\n`; });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `health_system_backup_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // CSV Parser Logic
+    function importData(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split(/\r?\n/);
+            if (lines.length < 2) { alert("Invalid data format."); return; }
+
+            const newBmi = []; const newDiary = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                const cols = line.split(',');
+                const type = cols[0]; const date = cols[1];
+                if (!date) continue;
+
+                if (type === 'BMI') {
+                    newBmi.push({ date, weight: parseFloat(cols[2]) || 0, height: parseFloat(cols[3]) || 0, bmi: parseFloat(cols[4]) || 0 });
+                } else if (type === 'NUTRITION') {
+                    newDiary.push({ 
+                        date, 
+                        calories: parseInt(cols[5]) || 0, 
+                        protein: parseInt(cols[6]) || 0, 
+                        carbs: parseInt(cols[7]) || 0, 
+                        fat: parseInt(cols[8]) || 0, 
+                        sodium: parseInt(cols[9]) || 0,
+                        steps: parseInt(cols[10]) || 0
+                    });
+                }
+            }
+
+            if (newBmi.length > 0 || newDiary.length > 0) {
+                if (confirm(`Data blocks verified inside file. Restore logs?`)) {
+                    let currentBmi = JSON.parse(localStorage.getItem('bmiHistory') || '[]');
+                    let currentDiary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+
+                    newBmi.forEach(newItem => { currentBmi = currentBmi.filter(item => item.date !== newItem.date); currentBmi.push(newItem); });
+                    newDiary.forEach(newItem => { currentDiary = currentDiary.filter(item => item.date !== newItem.date); currentDiary.push(newItem); });
+
+                    localStorage.setItem('bmiHistory', JSON.stringify(currentBmi));
+                    localStorage.setItem('diaryHistory', JSON.stringify(currentDiary));
+
+                    renderBMITable();
+                    renderDiaryTable();
+                    updateCharts();
+                    alert("Metrics synchronized successfully.");
+                }
+            } else { alert("No compatible parameters located."); }
+        };
+        reader.readAsText(file);
+        input.value = '';
+    }
+    
+    window.addEventListener('resize', () => {
+        if(window.innerWidth >= 768 && document.getElementById('chartPicker').value === 'all') {
+            toggleChartLayout();
+        }
+    });
+</script>
+</body>
+</html>
