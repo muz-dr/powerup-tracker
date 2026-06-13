@@ -74,8 +74,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             white-space: nowrap;
+            flex-shrink: 1;
+            min-width: 0;
         }
-        .topbar-actions { display: flex; gap: 7px; flex-shrink: 0; }
+        .topbar-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
 
         /* BOTTOM NAV */
         .bottom-nav {
@@ -94,16 +96,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 9px 4px;
+            padding: 9px 2px;
             gap: 3px;
             text-decoration: none;
             color: var(--text-muted);
-            font-size: 0.58rem;
+            font-size: 0.55rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.03em;
             transition: color 0.2s;
             -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
         }
         .bottom-nav a .nav-icon { font-size: 1.25rem; line-height: 1; }
         .bottom-nav a.active { color: var(--primary); }
@@ -126,6 +129,8 @@
             box-shadow: 0 8px 24px -8px rgba(0,0,0,0.5);
             border: 1px solid rgba(255,255,255,0.05);
             margin-bottom: 14px;
+            min-width: 0;
+            overflow: hidden;
         }
         .card:last-child { margin-bottom: 0; }
 
@@ -231,13 +236,14 @@
         .btn-sm { padding: 10px 14px; font-size: 0.83rem; }
 
         /* FORM GRIDS */
-        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; min-width: 0; }
         @media (max-width: 360px) { .form-row-3 { grid-template-columns: 1fr 1fr; } }
 
         /* SECTION GRID */
-        .section-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .section-grid { display: grid; grid-template-columns: 1fr; gap: 14px; align-items: stretch; }
         @media (min-width: 768px) { .section-grid { grid-template-columns: 1fr 1fr; } }
+        .section-grid .card { margin-bottom: 0; }
 
         /* BMI RESULT */
         .result { margin-top: 11px; padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; font-size: 0.9rem; }
@@ -328,8 +334,9 @@
         .chart-controls { display: flex; gap: 8px; flex-wrap: wrap; }
         .chart-select { width: auto; padding: 8px 11px; font-size: 0.8rem; border-radius: 8px; min-width: 120px; }
         .chart-container { position: relative; height: 220px; width: 100%; }
-        .charts-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: stretch; }
         @media (min-width: 768px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
+        .charts-grid .chart-inner-card { margin-bottom: 0; }
         .chart-inner-card {
             background: rgba(15,23,42,0.5);
             border-radius: 12px;
@@ -462,12 +469,12 @@
 <header class="app-topbar">
     <h1>&#x26A1; PowerUp Track</h1>
     <div class="topbar-actions">
-        <button class="btn btn-outline" style="padding:9px 11px;font-size:0.77rem;" onclick="exportData()">&#x1F4BE; Export</button>
+        <button class="btn btn-outline" style="padding:8px 10px;font-size:0.75rem;" onclick="exportData()">&#x1F4BE;</button>
         <div class="file-input-wrapper">
-            <button class="btn btn-outline" style="padding:9px 11px;font-size:0.77rem;">&#x1F4E4; Import</button>
+            <button class="btn btn-outline" style="padding:8px 10px;font-size:0.75rem;">&#x1F4E4;</button>
             <input type="file" id="csvImportMobile" accept=".csv" onchange="importData(this)">
         </div>
-        <button class="btn btn-danger" style="padding:9px 11px;font-size:0.77rem;" onclick="clearAllData()">&#x1F5D1;</button>
+        <button class="btn btn-danger" style="padding:8px 10px;font-size:0.75rem;border-radius:10px;" onclick="clearAllData()">&#x1F5D1;</button>
     </div>
 </header>
 
