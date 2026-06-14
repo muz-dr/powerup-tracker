@@ -724,7 +724,13 @@
             </div>
             <div class="tip-box">&#x1F4A1; <strong>Pro tip — use AI Mode Search:</strong> In the Gemini app, enable the <strong>Search</strong> toggle so Gemini can look up nutritional data for branded foods and restaurant meals in real time for much more accurate values.</div>
             <h3>&#x1F4CB; Prompt to copy</h3>
-            <div class="prompt-box" id="promptText">I will send you photos or descriptions of my breakfast, lunch, dinner and snacks throughout the day. Track each meal as I send it, keeping a running total. When I say "Final Summary", give me the day's totals strictly inside a JSON code block using exactly this format so I can paste it into my nutrition tracker:
+            <div class="prompt-box" id="promptText">I will send you photos or descriptions of my breakfast, lunch, dinner, and snacks throughout the day. 
+
+For EVERY meal I send, you must strictly follow these two steps:
+1. Break down the estimated calories, protein, carbs, fat, and sodium for each ingredient. Explicitly look out for hidden Malaysian cooking variables like cooking oils, santan, and sugar coatings based on standard local recipes.
+2. Run a Python script internally to calculate and verify the exact running sum of the day so far. Do not do the math using text prediction.
+
+When I say "Final Summary", use Python to generate the final verified numbers and output them strictly inside a JSON code block using exactly this format:
 
 ```json
 {
