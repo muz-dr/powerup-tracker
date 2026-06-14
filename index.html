@@ -89,8 +89,18 @@
             background: linear-gradient(to right, var(--primary), var(--accent));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             white-space: nowrap; flex-shrink: 1; min-width: 0;
+            display: flex; align-items: center;
         }
         .topbar-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
+
+        .streak-badge {
+            font-size: 0.8rem; font-weight: 800; letter-spacing: 0.02em;
+            background: color-mix(in srgb, var(--warning) 15%, transparent);
+            color: var(--warning); padding: 3px 8px; border-radius: 12px;
+            margin-left: 10px; border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent);
+            display: inline-flex; align-items: center; gap: 3px; font-family: sans-serif;
+            text-shadow: none; -webkit-text-fill-color: var(--warning);
+        }
 
         /* THEME CYCLE BUTTON */
         .theme-btn {
@@ -224,6 +234,7 @@
         .guide-btn { border-style: dashed; }
 
         /* FORM GRIDS */
+        .form-row-1 { margin-bottom: 11px; }
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; min-width: 0; }
         @media (max-width: 360px) { .form-row-3 { grid-template-columns: 1fr 1fr; } }
@@ -247,7 +258,7 @@
         }
         .table-scroll-inner { overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: transparent; min-width: 380px; }
-        #diaryTable { min-width: 780px; }
+        #diaryTable { min-width: 820px; }
         th, td { padding: 10px 11px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap; }
         th {
             background-color: rgba(0,0,0,0.3); color: var(--text); font-weight: 700;
@@ -472,7 +483,7 @@
 <!-- MOBILE TOP BAR -->
 <header class="app-topbar tour-target-manage">
     <div class="topbar-row topbar-row-1">
-        <h1>&#x26A1; PowerUp Track</h1>
+        <h1>&#x26A1; PowerUp Track <span id="streakMobile" class="streak-badge" style="display:none;">🔥 0</span></h1>
     </div>
     <div class="topbar-row topbar-row-2">
         <button class="theme-btn" onclick="cycleTheme()" id="themeBtnMobile">
@@ -496,7 +507,7 @@
 
     <!-- DESKTOP HEADER -->
     <header class="desktop-header tour-target-manage">
-        <h1>&#x26A1; PowerUp Track</h1>
+        <h1>&#x26A1; PowerUp Track <span id="streakDesktop" class="streak-badge" style="display:none;">🔥 0</span></h1>
         <div class="desktop-header-actions">
             <button class="theme-btn" onclick="cycleTheme()" id="themeBtnDesktop">
                 <span class="theme-btn-swatch" id="themeSwatchDesktop"></span>
@@ -634,6 +645,16 @@
                         <div class="form-group"><label for="sodium">Sodium (mg)</label><input type="number" id="sodium" placeholder="1800" inputmode="numeric" required></div>
                         <div class="form-group"><label for="steps">Steps</label><input type="number" id="steps" placeholder="10000" value="0" inputmode="numeric" required></div>
                     </div>
+                    
+                    <div class="form-row-1">
+                        <label for="water">💧 Water (ml)</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="number" id="water" placeholder="0" value="0" inputmode="numeric" required>
+                            <button type="button" class="btn btn-secondary" style="width:auto; padding:0 14px; white-space:nowrap;" onclick="addWater(250)">+ 250ml</button>
+                            <button type="button" class="btn btn-secondary" style="width:auto; padding:0 14px; white-space:nowrap;" onclick="addWater(500)">+ 500ml</button>
+                        </div>
+                    </div>
+
                     <div class="form-row-2" style="margin-top:4px;">
                         <button type="button" class="btn btn-glow" onclick="openGeminiModal()">&#x1F916; Gemini Fill</button>
                         <button type="submit" class="btn" id="diarySubmitBtn">Log Day</button>
@@ -653,7 +674,7 @@
                     <table id="diaryTable">
                         <thead><tr>
                             <th>Date</th><th>Calories</th><th>Protein</th><th>Carbs</th>
-                            <th>Fat</th><th>Sodium</th><th>Steps</th><th>Burn</th>
+                            <th>Fat</th><th>Sodium</th><th>Water</th><th>Steps</th><th>Burn</th>
                             <th>Net Cal</th><th style="width:70px;text-align:center;">Act.</th>
                         </tr></thead>
                         <tbody></tbody>
@@ -686,12 +707,21 @@
                         <option value="7">Weekly</option><option value="30" selected>Monthly</option><option value="365">Yearly</option>
                     </select>
                     <select id="chartPicker" class="chart-select" onchange="toggleChartLayout()">
-                        <option value="all">All Charts</option><option value="bmi">BMI Only</option>
-                        <option value="calorie">Calories Only</option><option value="steps">Steps Only</option>
+                        <option value="all">All Charts</option>
+                        <option value="macro">Macros Only</option>
+                        <option value="bmi">BMI Only</option>
+                        <option value="calorie">Calories Only</option>
+                        <option value="steps">Steps Only</option>
                     </select>
                 </div>
             </div>
             <div class="charts-grid" id="chartsContainerGrid">
+                
+                <div class="chart-inner-card" id="macroChartWrapper">
+                    <h3>&#x1F354; Macro Breakdown</h3>
+                    <div class="chart-container"><canvas id="macroChart"></canvas></div>
+                </div>
+
                 <div class="chart-inner-card" id="bmiChartWrapper">
                     <h3>&#x2696; BMI Timeline</h3>
                     <div class="chart-container"><canvas id="bmiChart"></canvas></div>
@@ -718,11 +748,12 @@
             <div class="how-to-steps">
                 <div class="how-step"><div class="how-step-num">1</div><div class="how-step-text"><strong>Open Google Gemini</strong> — go to <strong>gemini.google.com</strong> or the Gemini app. Use <strong>Gemini 1.5 Pro</strong> or higher for best accuracy.</div></div>
                 <div class="how-step"><div class="how-step-num">2</div><div class="how-step-text"><strong>Copy and send the prompt below</strong> — tap <em>Copy Prompt</em>, paste into Gemini, and send. This sets Gemini up to track your meals.</div></div>
-                <div class="how-step"><div class="how-step-num">3</div><div class="how-step-text"><strong>Log each meal as you eat</strong> — send a photo or describe it in text (e.g. "2 fried eggs, 1 cup white rice, 150g grilled chicken"). Gemini keeps a running tally.</div></div>
+                <div class="how-step"><div class="how-step-num">3</div><div class="how-step-text"><strong>Log each meal as you eat</strong> — send a photo or describe it in text (e.g. "Nasi Lemak with fried egg"). Gemini keeps a running tally.</div></div>
                 <div class="how-step"><div class="how-step-num">4</div><div class="how-step-text"><strong>At end of day, type "Final Summary"</strong> — Gemini replies with a JSON block of your totals.</div></div>
                 <div class="how-step"><div class="how-step-num">5</div><div class="how-step-text"><strong>Tap &#x1F916; Gemini Fill above</strong> — paste the JSON into the popup. Form fills automatically. Review, then tap <em>Log Day</em>.</div></div>
             </div>
             <div class="tip-box">&#x1F4A1; <strong>Pro tip — use AI Mode Search:</strong> In the Gemini app, enable the <strong>Search</strong> toggle so Gemini can look up nutritional data for branded foods and restaurant meals in real time for much more accurate values.</div>
+            
             <h3>&#x1F4CB; Prompt to copy</h3>
             <div class="prompt-box" id="promptText">I will send you photos or descriptions of my breakfast, lunch, dinner, and snacks throughout the day. 
 
@@ -818,7 +849,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
 
     const KCAL_PER_STEP = 0.04;
     const todayStr = getLocalDateStr();
-    let bmiChartInstance = null, calorieChartInstance = null, stepsChartInstance = null;
+    let bmiChartInstance = null, calorieChartInstance = null, stepsChartInstance = null, macroChartInstance = null;
     let bmiPage = 1, diaryPage = 1;
 
     document.getElementById('bmiDate').value = todayStr;
@@ -834,6 +865,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         initCharts();
         toggleChartLayout();
         initFacts();
+        updateStreak(); 
     });
 
     // ── THEME ─────────────────────────────────────
@@ -875,6 +907,59 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         }
     }
 
+    // ── GAMIFICATION: STREAK CALCULATION ──────────
+    function updateStreak() {
+        const diary = JSON.parse(localStorage.getItem('diaryHistory') || '[]');
+        const els = [document.getElementById('streakMobile'), document.getElementById('streakDesktop')];
+        
+        if(diary.length === 0) {
+            els.forEach(el => el.style.display = 'none');
+            return;
+        }
+
+        diary.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
+        let streak = 0;
+        let currentDate = new Date(todayStr);
+        currentDate.setHours(0,0,0,0);
+
+        const latestEntryDate = new Date(diary[0].date);
+        latestEntryDate.setHours(0,0,0,0);
+        const diffDays = Math.floor((currentDate - latestEntryDate) / (1000 * 60 * 60 * 24)); 
+        
+        if (diffDays > 1) {
+            els.forEach(el => el.style.display = 'none');
+            return;
+        }
+
+        let checkDate = new Date(diary[0].date);
+        checkDate.setHours(0,0,0,0);
+
+        for (let i = 0; i < diary.length; i++) {
+            let entryDate = new Date(diary[i].date);
+            entryDate.setHours(0,0,0,0);
+
+            if (entryDate.getTime() === checkDate.getTime()) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1); 
+            } else if (entryDate.getTime() > checkDate.getTime()) {
+                continue; 
+            } else {
+                break; 
+            }
+        }
+
+        if (streak > 0) {
+            els.forEach(el => {
+                el.innerHTML = `🔥 ${streak}`;
+                el.style.display = 'inline-flex';
+            });
+        } else {
+            els.forEach(el => el.style.display = 'none');
+        }
+    }
+
+
     // ── HEALTH FACTS CARD ──────────────────────────
     const HEALTH_FACTS = [
         { icon: '&#x2764;', text: 'Losing <strong>1 kg</strong> lowers systolic blood pressure by <strong>~1 mmHg</strong>', category: 'Heart Health', source: 'AHA Guidelines' },
@@ -895,11 +980,9 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     function initFacts() {
         const dotsContainer = document.getElementById('factsDots');
         if (!dotsContainer) return;
-        
         dotsContainer.innerHTML = HEALTH_FACTS.map((_, i) =>
             `<button class="facts-dot ${i === 0 ? 'active' : ''}" onclick="setFact(${i})" aria-label="Fact ${i + 1}"></button>`
         ).join('');
-        
         renderFact(0);
         startFactTimer();
     }
@@ -907,7 +990,6 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     function renderFact(idx) {
         const f = HEALTH_FACTS[idx];
         const display = document.getElementById('factDisplay');
-        
         display.classList.remove('fact-transition-enter');
         void display.offsetWidth; 
         display.classList.add('fact-transition-enter');
@@ -917,9 +999,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('factCategory').innerText = f.category || 'Tip';
         document.getElementById('factSource').innerText = f.source ? `Source: ${f.source}` : '';
 
-        document.querySelectorAll('.facts-dot').forEach((dot, i) => {
-            dot.classList.toggle('active', i === idx);
-        });
+        document.querySelectorAll('.facts-dot').forEach((dot, i) => { dot.classList.toggle('active', i === idx); });
     }
 
     function moveFact(direction) {
@@ -928,144 +1008,69 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         startFactTimer();
     }
 
-    function setFact(idx) {
-        currentFactIdx = idx;
-        renderFact(idx);
-        startFactTimer();
-    }
+    function setFact(idx) { currentFactIdx = idx; renderFact(idx); startFactTimer(); }
+    function startFactTimer() { clearInterval(factTimer); factTimer = setInterval(() => { moveFact(1); }, 6500); }
 
-    function startFactTimer() {
-        clearInterval(factTimer);
-        factTimer = setInterval(() => { moveFact(1); }, 6500);
-    }
-
-    // ── TOUR GUIDE (Top-to-Bottom by Card) ────────
+    // ── TOUR GUIDE ────────────────────────────────
     let currentTourStep = 0;
-    
     const tourSteps = [
-        { 
-            targetClass: 'tour-target-manage', 
-            text: "<strong>Theme & Data Controls</strong><br>Tap the Theme button to change the app's look. Use the icons on the right to 💾 Export, 📥 Import, or 🗑️ Clear your data." 
-        },
-        { 
-            targetClass: 'tour-target-profile', 
-            text: "<strong>Profile & Goals</strong><br>Set your stats to calculate your daily calorie burn (TDEE). Adjust your macro targets below to track your progress." 
-        },
-        { 
-            targetClass: 'tour-target-bmi', 
-            text: "<strong>BMI Tracking</strong><br>Log your weight and height here. It automatically calculates your BMI and saves it to your history." 
-        },
-        { 
-            targetClass: 'tour-target-log', 
-            text: "<strong>Daily Intake</strong><br>Log your meals here. <b>Pro tip:</b> Tap the ⚡ <b>Gemini Fill</b> button to instantly fill this form using an AI summary!" 
-        },
-        { 
-            targetClass: 'tour-target-history', 
-            text: "<strong>History & Editing</strong><br>Review your past logs. If you need to make changes, tap the ✏️ icon on any row to edit, or ✖ to delete it." 
-        },
-        { 
-            targetClass: 'tour-target-charts', 
-            text: "<strong>Analytics</strong><br>Visualize your progress over time. You can filter by weekly, monthly, or yearly trends." 
-        },
-        { 
-            targetClass: 'tour-target-ai', 
-            text: "<strong>AI Helper Guide</strong><br>Follow these simple steps to start tracking your food effortlessly with Google Gemini." 
-        }
+        { targetClass: 'tour-target-manage', text: "<strong>Theme & Data Controls</strong><br>Tap the Theme button to change the app's look. Use the icons on the right to 💾 Export, 📥 Import, or 🗑️ Clear your data." },
+        { targetClass: 'tour-target-profile', text: "<strong>Profile & Goals</strong><br>Set your stats to calculate your daily calorie burn (TDEE). Adjust your macro targets below to track your progress." },
+        { targetClass: 'tour-target-bmi', text: "<strong>BMI Tracking</strong><br>Log your weight and height here. It automatically calculates your BMI and saves it to your history." },
+        { targetClass: 'tour-target-log', text: "<strong>Daily Intake</strong><br>Log your meals here. <b>Pro tip:</b> Tap the ⚡ <b>Gemini Fill</b> button to instantly fill this form using an AI summary!" },
+        { targetClass: 'tour-target-history', text: "<strong>History & Editing</strong><br>Review your past logs. If you need to make changes, tap the ✏️ icon on any row to edit, or ✖ to delete it." },
+        { targetClass: 'tour-target-charts', text: "<strong>Analytics</strong><br>Visualize your progress over time. You can filter by weekly, monthly, or yearly trends." },
+        { targetClass: 'tour-target-ai', text: "<strong>AI Helper Guide</strong><br>Follow these simple steps to start tracking your food effortlessly with Google Gemini." }
     ];
 
-    function startTour() {
-        currentTourStep = 0;
-        document.getElementById('tourSpotlight').style.display = 'block';
-        document.getElementById('tourTooltip').style.display = 'block';
-        showTourStep();
-    }
-
+    function startTour() { currentTourStep = 0; document.getElementById('tourSpotlight').style.display = 'block'; document.getElementById('tourTooltip').style.display = 'block'; showTourStep(); }
     function getVisibleTarget(className) {
         const els = document.querySelectorAll('.' + className);
-        for (let el of els) {
-            if (el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none') {
-                return el;
-            }
-        }
+        for (let el of els) { if (el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none') return el; }
         return null;
     }
 
     function showTourStep() {
         const step = tourSteps[currentTourStep];
         if (!step) return endTour();
-
         const target = getVisibleTarget(step.targetClass);
         const spot = document.getElementById('tourSpotlight');
         const tt = document.getElementById('tourTooltip');
-        
         document.getElementById('tourText').innerHTML = step.text;
         document.getElementById('tourNextBtn').innerText = currentTourStep === tourSteps.length - 1 ? 'Finish' : 'Next';
 
         if (target) {
-            // Scroll to place the target neatly at the top of the viewport
             const headerOffset = window.innerWidth < 768 ? 90 : 100;
             const elementAbsoluteTop = target.getBoundingClientRect().top + window.pageYOffset;
             window.scrollTo({ top: Math.max(0, elementAbsoluteTop - headerOffset), behavior: 'smooth' });
 
-            // Wait for smooth scroll to finish
             setTimeout(() => {
-                const rect = target.getBoundingClientRect();
+                const updatedRect = target.getBoundingClientRect();
                 const pad = 6;
-                
-                // Draw fixed spotlight over the element
-                spot.style.top = (rect.top - pad) + 'px';
-                spot.style.left = (rect.left - pad) + 'px';
-                spot.style.width = (rect.width + pad * 2) + 'px';
-                spot.style.height = (rect.height + pad * 2) + 'px';
+                spot.style.top = (updatedRect.top - pad) + 'px';
+                spot.style.left = (updatedRect.left - pad) + 'px';
+                spot.style.width = (updatedRect.width + pad * 2) + 'px';
+                spot.style.height = (updatedRect.height + pad * 2) + 'px';
                 spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.8), 0 0 20px var(--primary)';
                 spot.style.border = '2px dashed var(--primary)';
 
-                // HEMISPHERE RULE for Tooltip
-                // If element's center is in the top half of the screen, pin tooltip to the bottom.
-                // If element's center is in the bottom half, pin tooltip to the top.
-                const centerY = rect.top + (rect.height / 2);
-                
+                const centerY = updatedRect.top + (updatedRect.height / 2);
                 tt.style.left = '50%';
                 tt.style.transform = 'translateX(-50%)';
-
                 if (centerY > window.innerHeight / 2) {
-                    // Element is mostly at the bottom -> Tooltip goes to Top
-                    tt.style.bottom = 'auto';
-                    tt.style.top = '100px';
+                    tt.style.bottom = 'auto'; tt.style.top = '100px';
                 } else {
-                    // Element is mostly at the top -> Tooltip goes to Bottom
-                    tt.style.top = 'auto';
-                    tt.style.bottom = '90px'; // Leaves space for bottom nav
+                    tt.style.top = 'auto'; tt.style.bottom = '90px'; 
                 }
             }, 400); 
-
         } else {
-            // FAILSAFE: Hide spotlight hole, dim screen, center tooltip
-            spot.style.top = '50%'; spot.style.left = '50%';
-            spot.style.width = '0px'; spot.style.height = '0px';
-            spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.8)';
-            spot.style.border = 'none';
-
-            tt.style.top = 'auto';
-            tt.style.bottom = '90px';
-            tt.style.left = '50%';
-            tt.style.transform = 'translateX(-50%)';
+            spot.style.top = '50%'; spot.style.left = '50%'; spot.style.width = '0px'; spot.style.height = '0px'; spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.8)'; spot.style.border = 'none';
+            tt.style.top = 'auto'; tt.style.bottom = '90px'; tt.style.left = '50%'; tt.style.transform = 'translateX(-50%)';
         }
     }
 
-    function nextTourStep() {
-        currentTourStep++;
-        if (currentTourStep >= tourSteps.length) {
-            endTour();
-        } else {
-            showTourStep();
-        }
-    }
-
-    function endTour() {
-        document.getElementById('tourSpotlight').style.display = 'none';
-        document.getElementById('tourTooltip').style.display = 'none';
-    }
+    function nextTourStep() { currentTourStep++; if (currentTourStep >= tourSteps.length) { endTour(); } else { showTourStep(); } }
+    function endTour() { document.getElementById('tourSpotlight').style.display = 'none'; document.getElementById('tourTooltip').style.display = 'none'; }
 
     // ── TOAST ─────────────────────────────────────
     function showToast(msg, ms=2500) {
@@ -1075,10 +1080,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     }
 
     // ── NAV ───────────────────────────────────────
-    function setActiveNav(el) {
-        document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.remove('active'));
-        el.classList.add('active');
-    }
+    function setActiveNav(el) { document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.remove('active')); el.classList.add('active'); }
 
     // ── MODAL ─────────────────────────────────────
     function openGeminiModal()  { document.getElementById('geminiPasteBox').value=''; document.getElementById('geminiModal').classList.add('open'); }
@@ -1161,7 +1163,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     function clearAllData() {
         if (confirm('WARNING: This will permanently delete all your data.\n\nContinue?')) {
             localStorage.clear();
-            loadProfile(); loadGoals(); renderBMITable(); renderDiaryTable(); updateCharts();
+            loadProfile(); loadGoals(); renderBMITable(); renderDiaryTable(); updateCharts(); updateStreak();
             document.getElementById('bmiResult').style.display='none';
             document.getElementById('tdeeBanner').style.display='none';
             document.getElementById('tdeePlaceholder').style.display='block';
@@ -1256,18 +1258,38 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         }
     }
 
-    // ── DIARY ─────────────────────────────────────
+    // ── DIARY (WATER INCLUDED) ────────────────────
+    window.addWater = function(amt) {
+        const el = document.getElementById('water');
+        const cur = parseInt(el.value) || 0;
+        el.value = cur + amt;
+    };
+
     document.getElementById('diaryForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const date=document.getElementById('logDate').value;
-        const entry={date,calories:parseInt(document.getElementById('calories').value),protein:parseInt(document.getElementById('protein').value),carbs:parseInt(document.getElementById('carbs').value),fat:parseInt(document.getElementById('fat').value),sodium:parseInt(document.getElementById('sodium').value),steps:parseInt(document.getElementById('steps').value)||0};
+        const entry={
+            date,
+            calories:parseInt(document.getElementById('calories').value),
+            protein:parseInt(document.getElementById('protein').value),
+            carbs:parseInt(document.getElementById('carbs').value),
+            fat:parseInt(document.getElementById('fat').value),
+            sodium:parseInt(document.getElementById('sodium').value),
+            water:parseInt(document.getElementById('water').value)||0,
+            steps:parseInt(document.getElementById('steps').value)||0
+        };
         let diary=JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date);
         diary.push(entry);diary.sort((a,b)=>new Date(b.date)-new Date(a.date));
         localStorage.setItem('diaryHistory',JSON.stringify(diary));
         document.getElementById('diarySubmitBtn').innerText='Log Day';
+        
         ['calories','protein','carbs','fat','sodium'].forEach(id=>document.getElementById(id).value='');
-        document.getElementById('logDate').value=todayStr;document.getElementById('steps').value='0';
-        renderDiaryTable();updateCharts();updateTDEE();showToast(`Day logged for ${date}`);
+        document.getElementById('logDate').value=todayStr;
+        document.getElementById('steps').value='0';
+        document.getElementById('water').value='0';
+        
+        renderDiaryTable(); updateCharts(); updateTDEE(); updateStreak();
+        showToast(`Day logged for ${date}`);
     });
 
     function renderDiaryTable() {
@@ -1284,7 +1306,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         chunks.forEach(chunk=>{
             [...chunk].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(r=>rows.push({type:'data',r}));
             const avg={};
-            ['calories','protein','carbs','fat','sodium','steps'].forEach(f=>avg[f]=(chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
+            ['calories','protein','carbs','fat','sodium','water','steps'].forEach(f=>avg[f]=(chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
             avg.burn=(avg.steps*KCAL_PER_STEP).toFixed(0);
             avg.net=(parseFloat(avg.calories)-parseFloat(avg.burn)).toFixed(0);
             rows.push({type:'avg',from:chunk[0].date,to:chunk[chunk.length-1].date,count:chunk.length,avg});
@@ -1293,24 +1315,26 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             if(item.type==='avg') return `<tr class="avg-row">
                 <td>&#x2205; ${item.count}-day avg<br><span style="font-size:0.65rem;font-weight:400;opacity:0.7">${item.from} &#8594; ${item.to}</span></td>
                 <td>${item.avg.calories} kcal</td><td>${item.avg.protein} g</td><td>${item.avg.carbs} g</td>
-                <td>${item.avg.fat} g</td><td>${item.avg.sodium} mg</td>
+                <td>${item.avg.fat} g</td><td>${item.avg.sodium} mg</td><td>${item.avg.water} ml</td>
                 <td>${parseFloat(item.avg.steps).toLocaleString()}</td>
                 <td>-${item.avg.burn}</td><td>${item.avg.net>0?'+':''}${item.avg.net}</td><td></td></tr>`;
-            const r=item.r,burn=Math.round(r.steps*KCAL_PER_STEP),net=r.calories-burn;
+            const r=item.r,burn=Math.round((r.steps||0)*KCAL_PER_STEP),net=r.calories-burn;
+            const water = r.water || 0;
             return `<tr>
                 <td>${r.date}</td>
                 <td><div style="font-weight:700;">${r.calories} kcal</div><span class="status-badge ${r.calories>lCal?'status-over':'status-good'}">${r.calories>lCal?'OVER':'OK'}</span></td>
                 <td><div style="font-weight:600;">${r.protein} g</div><span class="status-badge ${r.protein>=fProt?'status-good':'status-under'}">${r.protein>=fProt?'MET':'LOW'}</span></td>
                 <td>${r.carbs} g</td><td>${r.fat} g</td>
                 <td><div>${r.sodium} mg</div><span class="status-badge ${r.sodium>lSod?'status-over':'status-good'}">${r.sodium>lSod?'HIGH':'OK'}</span></td>
-                <td style="font-weight:600;color:var(--accent);">${r.steps.toLocaleString()}</td>
+                <td style="color:var(--chart-4); font-weight:600;">${water} ml</td>
+                <td style="font-weight:600;color:var(--accent);">${(r.steps||0).toLocaleString()}</td>
                 <td style="color:var(--primary);font-weight:700;">-${burn}</td>
                 <td style="font-weight:700;color:${net>200?'#f87171':net<-200?'#34d399':'var(--text)'};">${net>0?'+':''}${net}</td>
                 <td class="action-cell">
                     <button class="btn-row-action btn-row-edit" onclick="editNutritionEntry('${r.date}')">&#x270F;</button>
                     <button class="btn-row-action btn-row-delete" onclick="deleteNutritionEntry('${r.date}')">&#x2715;</button>
                 </td></tr>`;
-        }).join(''):'<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:20px;">No logs yet</td></tr>';
+        }).join(''):'<tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px;">No logs yet</td></tr>';
         const from=total?(diaryPage-1)*perPage+1:0,to=Math.min(diaryPage*perPage,total);
         document.getElementById('diaryPagInfo').textContent=total?`${from}–${to} of ${total}`:'0 entries';
         document.getElementById('diaryPageLabel').textContent=`${diaryPage}/${pages}`;
@@ -1321,12 +1345,23 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
 
     function editNutritionEntry(date) {
         const e=JSON.parse(localStorage.getItem('diaryHistory')||'[]').find(i=>i.date===date);
-        if(e){document.getElementById('logDate').value=e.date;document.getElementById('calories').value=e.calories;document.getElementById('protein').value=e.protein;document.getElementById('carbs').value=e.carbs;document.getElementById('fat').value=e.fat;document.getElementById('sodium').value=e.sodium;document.getElementById('steps').value=e.steps||0;document.getElementById('diarySubmitBtn').innerText='Update Log';document.getElementById('diaryForm').scrollIntoView({behavior:'smooth'});}
+        if(e){
+            document.getElementById('logDate').value=e.date;
+            document.getElementById('calories').value=e.calories;
+            document.getElementById('protein').value=e.protein;
+            document.getElementById('carbs').value=e.carbs;
+            document.getElementById('fat').value=e.fat;
+            document.getElementById('sodium').value=e.sodium;
+            document.getElementById('water').value=e.water||0;
+            document.getElementById('steps').value=e.steps||0;
+            document.getElementById('diarySubmitBtn').innerText='Update Log';
+            document.getElementById('diaryForm').scrollIntoView({behavior:'smooth'});
+        }
     }
     function deleteNutritionEntry(date) {
         if(confirm(`Delete log for ${date}?`)){
             localStorage.setItem('diaryHistory',JSON.stringify(JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date)));
-            renderDiaryTable();updateCharts();updateTDEE();showToast('Log deleted.');
+            renderDiaryTable();updateCharts();updateTDEE();updateStreak();showToast('Log deleted.');
         }
     }
 
@@ -1353,19 +1388,25 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     function toggleChartLayout() {
         const v=document.getElementById('chartPicker').value;
         const grid=document.getElementById('chartsContainerGrid');
-        const wB=document.getElementById('bmiChartWrapper'),wC=document.getElementById('calorieChartWrapper'),wS=document.getElementById('stepsChartWrapper');
-        [wB,wC,wS].forEach(w=>w.style.display='none');
+        const wM=document.getElementById('macroChartWrapper'),wB=document.getElementById('bmiChartWrapper'),wC=document.getElementById('calorieChartWrapper'),wS=document.getElementById('stepsChartWrapper');
+        [wM,wB,wC,wS].forEach(w=>w.style.display='none');
         wS.style.gridColumn='span 1';grid.style.gridTemplateColumns='1fr';
-        if(v==='all'){[wB,wC,wS].forEach(w=>w.style.display='block');if(window.innerWidth>=768){grid.style.gridTemplateColumns='1fr 1fr';wS.style.gridColumn='span 2';}}
+        
+        if(v==='all'){
+            [wM,wB,wC,wS].forEach(w=>w.style.display='block');
+            if(window.innerWidth>=768){grid.style.gridTemplateColumns='1fr 1fr';wS.style.gridColumn='span 2';}
+        }
+        else if(v==='macro')  wM.style.display='block';
         else if(v==='bmi')    wB.style.display='block';
         else if(v==='calorie')wC.style.display='block';
         else if(v==='steps')  wS.style.display='block';
-        [bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.resize());
+        
+        [macroChartInstance,bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.resize());
     }
 
     function rebuildCharts() {
-        [bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.destroy());
-        bmiChartInstance=calorieChartInstance=stepsChartInstance=null;
+        [macroChartInstance,bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.destroy());
+        macroChartInstance=bmiChartInstance=calorieChartInstance=stepsChartInstance=null;
         initCharts();
     }
 
@@ -1379,6 +1420,33 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         });
         const xScale = { grid:{color:tc.grid}, ticks:{color:tc.text,font:{size:9},maxRotation:45}, border:{color:tc.grid} };
         const baseOpts = { responsive:true, maintainAspectRatio:false, animation:{ duration:600, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(15,23,42,0.9)', titleColor:'#fff', bodyColor:tc.text, borderColor:tc.c1, borderWidth:1, padding:10, cornerRadius:10 } } };
+
+        // MACRO — Doughnut
+        const macCtx = document.getElementById('macroChart').getContext('2d');
+        macroChartInstance = new Chart(macCtx, {
+            type: 'doughnut',
+            data: { labels: ['Protein', 'Carbs', 'Fat'], datasets: [{ data: [1,1,1], backgroundColor: [tc.c2, tc.c3, tc.c4], borderWidth: 0 }] },
+            options: { 
+                ...baseOpts, 
+                cutout: '70%', 
+                plugins: { 
+                    ...baseOpts.plugins, 
+                    legend: { display: true, position: 'right', labels: { color: tc.text, font: { size: 11, weight: '600' }, boxWidth: 12, padding: 15 } },
+                    tooltip: {
+                        ...baseOpts.plugins.tooltip,
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw || 0;
+                                let total = context.chart._metasets[context.datasetIndex].total || 1;
+                                let percentage = Math.round((value / total) * 100) + '%';
+                                if (total === 3 && value === 1) return ` No Data`; 
+                                return ` ${context.label}: ${percentage} (${value}g/day avg)`;
+                            }
+                        }
+                    }
+                } 
+            }
+        });
 
         // BMI — smooth area line
         const bmiCtx = document.getElementById('bmiChart').getContext('2d');
@@ -1429,7 +1497,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     }
 
     function updateCharts() {
-        if(!bmiChartInstance||!calorieChartInstance||!stepsChartInstance) return;
+        if(!bmiChartInstance||!calorieChartInstance||!stepsChartInstance||!macroChartInstance) return;
         const days=parseInt(document.getElementById('timeRange').value);
         const cutOff=new Date(); cutOff.setDate(cutOff.getDate()-days);
         const bmiH =JSON.parse(localStorage.getItem('bmiHistory')  ||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -1446,26 +1514,46 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             calorieChartInstance.data.labels=fD.map(i=>i.date);
             calorieChartInstance.data.datasets[0].data=fD.map(i=>i.calories);
             calorieChartInstance.data.datasets[1].data=fD.map(()=>tCal);
+            
             stepsChartInstance.data.labels=fD.map(i=>i.date);
             stepsChartInstance.data.datasets[0].data=fD.map(i=>i.steps||0);
             stepsChartInstance.data.datasets[1].data=fD.map(i=>((i.steps||0)*KCAL_PER_STEP).toFixed(0));
+
+            // Macro calculation (Averages)
+            let p=0, c=0, f=0;
+            let logDays = fD.length;
+            fD.forEach(log => { p+=log.protein||0; c+=log.carbs||0; f+=log.fat||0; });
+            
+            if (p===0 && c===0 && f===0) {
+                macroChartInstance.data.datasets[0].data = [1,1,1]; // fallback visual
+            } else {
+                macroChartInstance.data.datasets[0].data = [
+                    Math.round(p / logDays),
+                    Math.round(c / logDays),
+                    Math.round(f / logDays)
+                ];
+            }
+
         } else {
             calorieChartInstance.data.labels=['Waiting']; calorieChartInstance.data.datasets[0].data=[0]; calorieChartInstance.data.datasets[1].data=[0];
             stepsChartInstance.data.labels=['Waiting']; stepsChartInstance.data.datasets[0].data=[0]; stepsChartInstance.data.datasets[1].data=[0];
+            macroChartInstance.data.datasets[0].data=[1,1,1];
         }
         calorieChartInstance.update('active');
         stepsChartInstance.update('active');
+        macroChartInstance.update('active');
     }
 
     // ── CSV EXPORT ────────────────────────────────
+    // Appended WATER_ML to column headers to ensure backward compatibility
     function exportData() {
         const bmi=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
         const diary=JSON.parse(localStorage.getItem('diaryHistory')||'[]');
         const age=localStorage.getItem('prof_age')||'', gender=localStorage.getItem('prof_gender')||'', activity=localStorage.getItem('prof_activity')||'';
-        let csv="data:text/csv;charset=utf-8,TYPE,DATE,WEIGHT_KG,HEIGHT_CM,BMI_VAL,CALORIES_KCAL,PROTEIN_G,CARBS_G,FAT_G,SODIUM_MG,STEPS_COUNT,PROFILE_AGE,PROFILE_GENDER,PROFILE_ACTIVITY\n";
-        csv+=`PROFILE,,,,,,,,,,,"${age}","${gender}","${activity}"\n`;
-        bmi.forEach(r=>csv+=`BMI,${r.date},${r.weight},${r.height},${r.bmi},,,,,,,,,\n`);
-        diary.forEach(r=>csv+=`NUTRITION,${r.date},,,,${r.calories},${r.protein},${r.carbs},${r.fat},${r.sodium},${r.steps||0},,,\n`);
+        let csv="data:text/csv;charset=utf-8,TYPE,DATE,WEIGHT_KG,HEIGHT_CM,BMI_VAL,CALORIES_KCAL,PROTEIN_G,CARBS_G,FAT_G,SODIUM_MG,STEPS_COUNT,PROFILE_AGE,PROFILE_GENDER,PROFILE_ACTIVITY,WATER_ML\n";
+        csv+=`PROFILE,,,,,,,,,,,"${age}","${gender}","${activity}",\n`;
+        bmi.forEach(r=>csv+=`BMI,${r.date},${r.weight},${r.height},${r.bmi},,,,,,,,,,\n`);
+        diary.forEach(r=>csv+=`NUTRITION,${r.date},,,,${r.calories},${r.protein},${r.carbs},${r.fat},${r.sodium},${r.steps||0},,,,${r.water||0}\n`);
         const link=document.createElement('a');
         link.setAttribute('href',encodeURI(csv));
         link.setAttribute('download',`health_backup_${getLocalDateStr()}.csv`);
@@ -1487,7 +1575,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
                 const cols=line.split(','),type=cols[0],date=cols[1];
                 if(type==='PROFILE'){pAge=(cols[11]||'').replace(/"/g,'');pGender=(cols[12]||'').replace(/"/g,'');pActivity=(cols[13]||'').replace(/"/g,'');}
                 else if(type==='BMI'&&date)       newBmi.push({date,weight:parseFloat(cols[2])||0,height:parseFloat(cols[3])||0,bmi:parseFloat(cols[4])||0});
-                else if(type==='NUTRITION'&&date) newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0});
+                else if(type==='NUTRITION'&&date) newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0,water:parseInt(cols[14])||0}); // col 14 ensures old CSVs parse perfectly as 0
             }
             if(newBmi.length>0||newDiary.length>0){
                 if(confirm(`Found ${newBmi.length} BMI and ${newDiary.length} nutrition entries. Restore?`)){
@@ -1500,7 +1588,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
                     if(pAge){localStorage.setItem('prof_age',pAge);document.getElementById('profileAge').value=pAge;}
                     if(pGender){localStorage.setItem('prof_gender',pGender);document.getElementById('profileGender').value=pGender;}
                     if(pActivity){localStorage.setItem('prof_activity',pActivity);document.getElementById('profileActivity').value=pActivity;}
-                    renderBMITable();renderDiaryTable();updateCharts();updateTDEE();
+                    renderBMITable();renderDiaryTable();updateCharts();updateTDEE();updateStreak();
                     showToast(`Imported ${newBmi.length+newDiary.length} entries.`);
                 }
             } else showToast('No compatible entries found.');
