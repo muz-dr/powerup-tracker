@@ -26,6 +26,8 @@
             --card: rgba(17,24,39,0.75); --card-solid: #111827;
             --text: #f3f4f6; --text-muted: #9ca3af;
             --border: #374151;
+            --input-bg: rgba(0,0,0,0.25); --input-focus: rgba(0,0,0,0.4);
+            --th-bg: rgba(0,0,0,0.3); --grid-line: rgba(255,255,255,0.05); --tooltip-bg: rgba(15,23,42,0.9); --tooltip-text: #fff;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --radius: 14px;
             --chart-1: #06b6d4; --chart-2: #d946ef; --chart-3: #a855f7; --chart-4: #22d3ee;
@@ -39,6 +41,8 @@
             --card: rgba(15,30,20,0.8); --card-solid: #0f1e14;
             --text: #ecfdf5; --text-muted: #6ee7b7;
             --border: #1f4d2e;
+            --input-bg: rgba(0,0,0,0.25); --input-focus: rgba(0,0,0,0.4);
+            --th-bg: rgba(0,0,0,0.3); --grid-line: rgba(255,255,255,0.05); --tooltip-bg: rgba(15,30,20,0.95); --tooltip-text: #fff;
             --success: #34d399; --warning: #fbbf24; --danger: #f87171;
             --radius: 14px;
             --chart-1: #10b981; --chart-2: #f59e0b; --chart-3: #34d399; --chart-4: #6ee7b7;
@@ -52,12 +56,29 @@
             --card: rgba(30,15,20,0.8); --card-solid: #1e0f14;
             --text: #fff1f2; --text-muted: #fca5a5;
             --border: #4d1f2e;
+            --input-bg: rgba(0,0,0,0.25); --input-focus: rgba(0,0,0,0.4);
+            --th-bg: rgba(0,0,0,0.3); --grid-line: rgba(255,255,255,0.05); --tooltip-bg: rgba(30,15,20,0.95); --tooltip-text: #fff;
             --success: #fb923c; --warning: #fbbf24; --danger: #f43f5e;
             --radius: 14px;
             --chart-1: #f97316; --chart-2: #ec4899; --chart-3: #fb923c; --chart-4: #fbbf24;
             --bg-gradient: radial-gradient(circle at 50% 0%, #2d1020 0%, #1a0a0f 70%);
             --topbar-bg: rgba(26,10,15,0.92);
             --nav-bg: rgba(30,15,20,0.97);
+        }
+        [data-theme="paper"] {
+            --primary: #3b82f6; --accent: #10b981;
+            --bg: #f3f4f6; --bg2: #e5e7eb;
+            --card: rgba(255,255,255,0.9); --card-solid: #ffffff;
+            --text: #1f2937; --text-muted: #6b7280;
+            --border: #d1d5db;
+            --input-bg: rgba(0,0,0,0.03); --input-focus: rgba(0,0,0,0.06);
+            --th-bg: rgba(0,0,0,0.05); --grid-line: rgba(0,0,0,0.08); --tooltip-bg: rgba(255,255,255,0.95); --tooltip-text: #1f2937;
+            --success: #059669; --warning: #d97706; --danger: #dc2626;
+            --radius: 14px;
+            --chart-1: #3b82f6; --chart-2: #10b981; --chart-3: #8b5cf6; --chart-4: #f59e0b;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #ffffff 0%, #f3f4f6 70%);
+            --topbar-bg: rgba(255,255,255,0.92);
+            --nav-bg: rgba(255,255,255,0.97);
         }
 
         * { box-sizing: border-box; }
@@ -77,7 +98,7 @@
             position: sticky; top: 0; z-index: 50;
             background: var(--topbar-bg);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid rgba(128,128,128,0.15);
             padding: calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
             display: flex; flex-direction: column; gap: 10px;
         }
@@ -105,26 +126,98 @@
         /* THEME CYCLE BUTTON */
         .theme-btn {
             display: flex; align-items: center; gap: 5px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: var(--input-bg);
+            border: 1px solid var(--border);
             border-radius: 20px; padding: 5px 10px 5px 8px;
             cursor: pointer; -webkit-tap-highlight-color: transparent;
             transition: background 0.2s, transform 0.1s;
             color: var(--text); font-size: 0.72rem; font-weight: 700;
             white-space: nowrap; flex-shrink: 0;
         }
-        .theme-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.12); }
+        .theme-btn:active { transform: scale(0.95); background: var(--input-focus); }
         .theme-btn-swatch {
             width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
             transition: background 0.3s;
         }
+
+        /* ── TOGGLE SWITCH (For settings) ────────── */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(128,128,128,0.3); border: 1px solid var(--border); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* FORM ROW 1 (missing from original) */
+        .form-row-1 { display: flex; flex-direction: column; gap: 6px; margin-bottom: 11px; }
+
+        /* ── VIRTUAL COMPANION ──────────────────── */
+        #virtualPet {
+            position: fixed; z-index: 9999;
+            display: none; user-select: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            /* start bottom-right corner */
+            bottom: 80px; right: 16px;
+            transition: bottom 2.2s cubic-bezier(.45,1.6,.55,1),
+                        right  2.2s cubic-bezier(.45,1.6,.55,1),
+                        left   2.2s cubic-bezier(.45,1.6,.55,1),
+                        transform 0.25s ease;
+        }
+        #petBody {
+            font-size: 2.2rem; line-height: 1;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+            display: block;
+        }
+        /* speech bubble */
+        #petBubble {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            right: 0;
+            background: var(--card-solid);
+            border: 1px solid var(--border);
+            border-radius: 12px 12px 2px 12px;
+            padding: 7px 11px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            max-width: 200px;
+            white-space: normal;
+            text-align: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: scale(0.8) translateY(6px);
+            transform-origin: bottom right;
+            transition: opacity 0.2s, transform 0.25s;
+            pointer-events: none;
+            z-index: 10000;
+        }
+        #petBubble.show {
+            opacity: 1; transform: scale(1) translateY(0);
+        }
+        /* walk animation */
+        @keyframes petWalk {
+            0%,100% { transform: rotate(0deg) scaleX(var(--pet-dir,1)); }
+            25%      { transform: rotate(-4deg) scaleX(var(--pet-dir,1)); }
+            75%      { transform: rotate(4deg) scaleX(var(--pet-dir,1)); }
+        }
+        .pet-walking #petBody {
+            animation: petWalk 0.5s ease-in-out infinite;
+        }
+        /* bounce when tapped */
+        @keyframes petBounce {
+            0%,100% { transform: scaleX(var(--pet-dir,1)) translateY(0); }
+            40%      { transform: scaleX(var(--pet-dir,1)) translateY(-12px); }
+        }
+        .pet-bounce #petBody { animation: petBounce 0.4s ease; }
 
         /* ── BOTTOM NAV ─────────────────────────── */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
             background: var(--nav-bg);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-top: 1px solid rgba(255,255,255,0.07);
+            border-top: 1px solid rgba(128,128,128,0.15);
             display: flex; padding-bottom: env(safe-area-inset-bottom,0px);
         }
         .bottom-nav a {
@@ -146,8 +239,8 @@
             background: var(--card);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-radius: var(--radius); padding: 16px;
-            box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 8px 32px -8px rgba(0,0,0,0.15);
+            border: 1px solid var(--border);
             margin-bottom: 14px; min-width: 0; overflow: hidden;
             transition: background 0.4s, border-color 0.3s;
         }
@@ -165,17 +258,13 @@
         /* PROFILE / GOALS */
         .goals-card { border-left: 3px solid var(--accent); }
         .goals-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .goals-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        @media (max-width: 480px) {
-            .goals-grid   { grid-template-columns: 1fr; gap: 8px; }
-            .goals-grid-3 { grid-template-columns: 1fr; gap: 8px; }
-        }
+        @media (max-width: 480px) { .goals-grid { grid-template-columns: 1fr; gap: 8px; } }
 
-        /* TDEE BANNER */
+        /* TDEE & ETA BANNER */
         .tdee-banner {
             margin-top: 14px;
-            background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(217,70,239,0.08));
-            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 8%, transparent));
+            border: 1px solid var(--border);
             border-radius: 12px; padding: 14px 16px;
             display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; text-align: center;
         }
@@ -186,6 +275,15 @@
         .tdee-item .tdee-val.purple { color: var(--accent); }
         .tdee-item .tdee-val.green  { color: var(--success); }
         .tdee-item .tdee-val.red    { color: var(--danger); }
+        
+        .eta-banner {
+            margin-top: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px;
+            text-align: center; font-size: 0.85rem; color: var(--text);
+            font-weight: 600;
+        }
 
         /* FORMS */
         .form-group { margin-bottom: 11px; }
@@ -196,14 +294,14 @@
         input, select, textarea {
             width: 100%; padding: 13px; border: 1px solid var(--border);
             border-radius: 10px; font-size: 16px;
-            background-color: rgba(0,0,0,0.25); color: var(--text);
+            background-color: var(--input-bg); color: var(--text);
             transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
             -webkit-appearance: none; appearance: none;
         }
         input:focus, select:focus, textarea:focus {
             outline: none; border-color: var(--primary);
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
-            background-color: rgba(0,0,0,0.4);
+            background-color: var(--input-focus);
         }
 
         /* BUTTONS */
@@ -216,7 +314,7 @@
             -webkit-tap-highlight-color: transparent; touch-action: manipulation;
         }
         .btn:active { transform: scale(0.97); opacity: 0.85; }
-        .btn-secondary { background: linear-gradient(135deg, #4b5563, #374151); box-shadow: none; }
+        .btn-secondary { background: linear-gradient(135deg, #4b5563, #374151); color: #fff; box-shadow: none; }
         .btn-outline {
             background: transparent; color: var(--primary);
             border: 1.5px solid var(--primary); box-shadow: none;
@@ -228,7 +326,7 @@
         }
         .btn-glow {
             background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--primary)));
-            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent); color: #fff;
         }
         .btn-sm { padding: 10px 14px; font-size: 0.83rem; }
         .guide-btn { border-style: dashed; }
@@ -246,26 +344,26 @@
 
         /* BMI RESULT */
         .result { margin-top: 11px; padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; font-size: 0.9rem; }
-        .normal  { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.28); }
-        .warning { background: rgba(245,158,11,0.12);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.28); }
-        .danger  { background: rgba(239,68,68,0.12);   color: #f87171; border: 1px solid rgba(239,68,68,0.28); }
+        .normal  { background: rgba(16,185,129,0.12); color: var(--success); border: 1px solid rgba(16,185,129,0.28); }
+        .warning { background: rgba(245,158,11,0.12);  color: var(--warning); border: 1px solid rgba(245,158,11,0.28); }
+        .danger  { background: rgba(239,68,68,0.12);   color: var(--danger); border: 1px solid rgba(239,68,68,0.28); }
 
         /* TABLES */
         .table-scroll {
             overflow-x: auto; -webkit-overflow-scrolling: touch;
             border: 1px solid var(--border); border-radius: 12px 12px 0 0;
-            background: rgba(0,0,0,0.2);
+            background: var(--input-bg);
         }
         .table-scroll-inner { overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: transparent; min-width: 380px; }
         #diaryTable { min-width: 820px; }
-        th, td { padding: 10px 11px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap; }
+        th, td { padding: 10px 11px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
         th {
-            background-color: rgba(0,0,0,0.3); color: var(--text); font-weight: 700;
+            background-color: var(--th-bg); color: var(--text); font-weight: 700;
             font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
             position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border);
         }
-        tr:hover td { background-color: rgba(255,255,255,0.025); }
+        tr:hover td { background-color: var(--input-focus); }
         tr:last-child td { border-bottom: none; }
 
         tr.avg-row td {
@@ -285,7 +383,7 @@
         .btn-row-edit   { color: var(--primary); }
         .btn-row-delete { color: var(--danger); }
         .btn-row-edit:active   { background: color-mix(in srgb, var(--primary) 15%, transparent); }
-        .btn-row-delete:active { background: rgba(239,68,68,0.15); }
+        .btn-row-delete:active { background: color-mix(in srgb, var(--danger) 15%, transparent); }
 
         /* BADGES */
         .status-badge {
@@ -293,22 +391,22 @@
             font-weight: 800; font-size: 0.62rem; letter-spacing: 0.02em;
             text-transform: uppercase; margin-top: 2px; white-space: nowrap;
         }
-        .status-good  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
-        .status-over  { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-        .status-under { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+        .status-good  { background: color-mix(in srgb, var(--success) 15%, transparent); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); }
+        .status-over  { background: color-mix(in srgb, var(--danger) 15%, transparent); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
+        .status-under { background: color-mix(in srgb, var(--warning) 15%, transparent); color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 30%, transparent); }
 
         /* PAGINATION */
         .pagination-bar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 9px 12px; flex-wrap: wrap; gap: 8px;
             border: 1px solid var(--border); border-top: none;
-            background: rgba(0,0,0,0.2); border-radius: 0 0 12px 12px;
+            background: var(--input-bg); border-radius: 0 0 12px 12px;
         }
         .pagination-info { font-size: 0.75rem; color: var(--text-muted); }
         .pagination-controls { display: flex; align-items: center; gap: 6px; }
         .pagination-controls select { padding: 6px 8px; font-size: 0.75rem; border-radius: 7px; width: auto; min-width: 0; }
         .page-btn {
-            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            background: var(--input-bg); border: 1px solid var(--border);
             color: var(--text); padding: 6px 10px; border-radius: 7px;
             cursor: pointer; font-size: 0.75rem; font-weight: 600;
             -webkit-tap-highlight-color: transparent; min-width: 34px; min-height: 34px;
@@ -326,14 +424,14 @@
         @media (min-width: 768px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
         .charts-grid .chart-inner-card { margin-bottom: 0; }
         .chart-inner-card {
-            background: rgba(0,0,0,0.25); border-radius: 12px; padding: 14px;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: var(--input-bg); border-radius: 12px; padding: 14px;
+            border: 1px solid var(--border);
         }
         .chart-inner-card h3 { margin-top: 0; margin-bottom: 10px; font-size: 0.85rem; opacity: 0.85; }
 
         /* PROMPT / AI */
         .prompt-box {
-            background: rgba(0,0,0,0.3); border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+            background: var(--input-bg); border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
             border-radius: 12px; padding: 40px 14px 14px;
             font-family: 'Courier New', Courier, monospace; font-size: 0.78rem;
             color: var(--primary); white-space: pre-wrap; position: relative; margin-top: 10px; word-break: break-word;
@@ -347,7 +445,7 @@
         .copy-tag:active { background: var(--primary); color: #fff; }
 
         .how-to-steps { margin: 14px 0 0; display: flex; flex-direction: column; gap: 10px; }
-        .how-step { display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 11px 13px; border: 1px solid rgba(255,255,255,0.05); }
+        .how-step { display: flex; gap: 12px; align-items: flex-start; background: var(--input-bg); border-radius: 10px; padding: 11px 13px; border: 1px solid var(--border); }
         .how-step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff; margin-top: 1px; }
         .how-step-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
         .how-step-text strong { color: var(--text); }
@@ -360,7 +458,7 @@
         /* MODAL */
         .modal { display: none; position: fixed; z-index: 200; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: flex-end; justify-content: center; }
         .modal.open { display: flex; }
-        .modal-content { background: var(--card-solid); border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 520px; border-radius: 20px 20px 0 0; padding: 20px 18px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.7); animation: slideUp 0.22s ease; }
+        .modal-content { background: var(--card-solid); border: 1px solid var(--border); width: 100%; max-width: 520px; border-radius: 20px 20px 0 0; padding: 20px 18px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.7); animation: slideUp 0.22s ease; }
         @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @media (min-width: 600px) { .modal { align-items: center; padding: 16px; } .modal-content { border-radius: 16px; padding-bottom: 20px; } }
         .modal-drag { width: 38px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
@@ -369,7 +467,7 @@
 
         /* TOAST */
         .toast {
-            position: fixed; bottom: calc(104px + env(safe-area-inset-bottom,0px) + 10px); left: 50%;
+            position: fixed; bottom: calc(72px + env(safe-area-inset-bottom,0px) + 8px); left: 50%;
             transform: translateX(-50%) translateY(16px);
             background: var(--card-solid); border: 1px solid var(--border); color: var(--text);
             padding: 10px 20px; border-radius: 50px; font-size: 0.83rem; font-weight: 600;
@@ -380,8 +478,8 @@
 
         /* ── HEALTH FACTS CARD ──────────────────── */
         .facts-card {
-            background: linear-gradient(145deg, rgba(6,182,212,0.06), rgba(217,70,239,0.04));
-            border: 1px solid rgba(255,255,255,0.07);
+            background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 6%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+            border: 1px solid var(--border);
         }
         .facts-nav {
             display: flex; align-items: center; justify-content: space-between;
@@ -401,7 +499,7 @@
             background: var(--primary); transform: scale(1.4);
         }
         .fact-btn {
-            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            background: var(--input-bg); border: 1px solid var(--border);
             color: var(--text); width: 34px; height: 34px; border-radius: 50%;
             cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
             -webkit-tap-highlight-color: transparent; flex-shrink: 0; transition: background 0.15s;
@@ -469,8 +567,7 @@
             display: none; position: fixed; z-index: 10000;
             background: var(--card-solid); border: 1px solid color-mix(in srgb, var(--primary) 50%, transparent);
             border-radius: 14px; padding: 20px; width: 90%; max-width: 320px;
-            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            /* Important: omit 'top' and 'bottom' from transition so it snaps cleanly between hemispheres */
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             transition: opacity 0.3s ease;
         }
         .tour-tooltip strong { color: var(--primary); font-size: 1.1rem; display: block; margin-bottom: 8px; }
@@ -479,6 +576,12 @@
     </style>
 </head>
 <body>
+
+<!-- VIRTUAL COMPANION (Comnyang) -->
+<div id="virtualPet" onclick="petTapped()">
+    <div id="petBubble"></div>
+    <span id="petBody">🐱</span>
+</div>
 
 <!-- MOBILE TOP BAR -->
 <header class="app-topbar tour-target-manage">
@@ -492,7 +595,9 @@
             <span class="theme-btn-swatch" id="themeSwatchMobile"></span>
         </button>
         <div class="topbar-actions">
-            <button class="btn btn-outline guide-btn" style="padding:6px 10px;font-size:0.75rem;" onclick="startTour()">&#x1F9ED; Guide</button>
+            <!-- Share Stats Button -->
+            <button class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;" onclick="shareStats()" title="Share Stats">&#x1F517;</button>
+            <button class="btn btn-outline guide-btn" style="padding:6px 10px;font-size:0.75rem;" onclick="startTour()" title="App Guide">&#x1F9ED;</button>
             <button class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;" onclick="exportData()" title="Export">&#x1F4BE;</button>
             <div class="file-input-wrapper">
                 <button class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;" title="Import">&#x1F4E4;</button>
@@ -513,6 +618,7 @@
                 <span class="theme-btn-swatch" id="themeSwatchDesktop"></span>
                 <span id="themeLabelDesktop">Cyber</span>
             </button>
+            <button class="btn btn-outline btn-sm" onclick="shareStats()">&#x1F517; Share</button>
             <button class="btn btn-outline btn-sm guide-btn" onclick="startTour()">&#x1F9ED; Guide</button>
             <button class="btn btn-outline btn-sm" onclick="exportData()">&#x1F4BE; Export</button>
             <div class="file-input-wrapper">
@@ -552,8 +658,10 @@
                 </select>
             </div>
 
-            <h2 style="margin-top:16px;">&#x1F3AF; Targets</h2>
-            <div class="goals-grid-3">
+            <h2 style="margin-top:16px;">&#x1F3AF; Targets &amp; ETA</h2>
+            
+            <!-- FIXED 2x2 Grid Layout -->
+            <div class="goals-grid">
                 <div class="form-group">
                     <label for="targetCalories">Calorie Ceiling (kcal)</label>
                     <input type="number" id="targetCalories" value="2000" onchange="saveGoals()">
@@ -566,7 +674,17 @@
                     <label for="targetSodium">Sodium Cap (mg)</label>
                     <input type="number" id="targetSodium" value="2300" onchange="saveGoals()">
                 </div>
+                <div class="form-group">
+                    <label for="targetWeight">Target Weight (kg)</label>
+                    <input type="number" id="targetWeight" step="0.1" placeholder="65.0" onchange="saveGoals()">
+                </div>
             </div>
+            
+            <!-- ETA Banner -->
+            <div class="eta-banner" id="etaDisplay">
+                Set target weight &amp; log BMI for ETA.
+            </div>
+
             <div class="tdee-banner" id="tdeeBanner" style="display:none;">
                 <div class="tdee-item"><label>BMR</label><div class="tdee-val purple" id="tdeeBMR">—</div><div style="font-size:0.6rem;color:var(--text-muted);">kcal/day at rest</div></div>
                 <div class="tdee-item"><label>TDEE</label><div class="tdee-val cyan" id="tdeeTDEE">—</div><div style="font-size:0.6rem;color:var(--text-muted);">maintenance kcal</div></div>
@@ -741,7 +859,7 @@
     <!-- AI HELPER -->
     <div id="section-gemini" class="section-anchor">
         <p class="section-label">AI Helper</p>
-        <div class="card tour-target-ai" style="background:linear-gradient(145deg,rgba(17,24,39,0.9),rgba(30,27,75,0.4));">
+        <div class="card tour-target-ai">
             <h2>&#x1F916; Gemini AI Nutrition Tracker</h2>
             <p style="font-size:0.83rem;color:var(--text-muted);margin:0 0 14px;">Use Google Gemini to automatically estimate daily nutrition from meal photos or descriptions, then import here in one tap.</p>
             <h3 style="margin-top:0;">&#x1F4CB; How to use</h3>
@@ -796,6 +914,32 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin:0;">
                 Tap arrows or dots to browse &bull; Based on published health research
             </p>
+        </div>
+    </div>
+
+    <!-- SETTINGS & LEGEND CARD -->
+    <div id="section-settings" class="section-anchor">
+        <p class="section-label">Settings &amp; Info</p>
+        <div class="card">
+            <h2>&#x1F4D6; Top Bar Legend</h2>
+            <ul style="list-style: none; padding: 0; margin: 0 0 20px; font-size: 0.85rem; color: var(--text); line-height: 1.8;">
+                <li><span style="display:inline-block; width:24px; text-align:center;">&#x1F517;</span> <strong>Share:</strong> Copy or share your current streak and progress.</li>
+                <li><span style="display:inline-block; width:24px; text-align:center;">&#x1F9ED;</span> <strong>Guide:</strong> Replay the interactive app tutorial.</li>
+                <li><span style="display:inline-block; width:24px; text-align:center;">&#x1F4BE;</span> <strong>Export:</strong> Download all your data as a backup CSV file.</li>
+                <li><span style="display:inline-block; width:24px; text-align:center;">&#x1F4E4;</span> <strong>Import:</strong> Restore your data from a CSV backup file.</li>
+                <li><span style="display:inline-block; width:24px; text-align:center;">&#x1F5D1;</span> <strong style="color:var(--danger);">Reset:</strong> Delete all data completely.</li>
+            </ul>
+
+            <div style="border-top: 1px solid var(--border); margin: 20px 0;"></div>
+
+            <h2>&#x1F431; Virtual Companion</h2>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                <span style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">Enable a cute little pet to wander around your dashboard!</span>
+                <label class="switch">
+                    <input type="checkbox" id="petToggle" onchange="togglePet()">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -866,10 +1010,15 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         toggleChartLayout();
         initFacts();
         updateStreak(); 
+
+        // Init Pet
+        const petEnabled = localStorage.getItem('pet_enabled') === 'true';
+        if (document.getElementById('petToggle')) document.getElementById('petToggle').checked = petEnabled;
+        if (petEnabled) togglePet();
     });
 
     // ── THEME ─────────────────────────────────────
-    const THEMES = ['cyber', 'forest', 'sunset'];
+    const THEMES = ['cyber', 'forest', 'sunset', 'paper'];
     let currentThemeIndex = THEMES.indexOf(localStorage.getItem('theme') || 'cyber');
     if (currentThemeIndex === -1) currentThemeIndex = 0;
 
@@ -897,6 +1046,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         if (t === 'cyber')  { bgGradient = 'linear-gradient(135deg,#06b6d4,#d946ef)'; themeColorHex = '#06b6d4'; }
         if (t === 'forest') { bgGradient = 'linear-gradient(135deg,#10b981,#f59e0b)'; themeColorHex = '#10b981'; }
         if (t === 'sunset') { bgGradient = 'linear-gradient(135deg,#f97316,#ec4899)'; themeColorHex = '#f97316'; }
+        if (t === 'paper')  { bgGradient = 'linear-gradient(135deg,#3b82f6,#10b981)'; themeColorHex = '#f3f4f6'; }
 
         labels.forEach(l => { if(l) l.textContent = labelText; });
         swatches.forEach(s => { if(s) s.style.background = bgGradient; });
@@ -904,6 +1054,182 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
 
         if (animate && bmiChartInstance) {
             setTimeout(() => { rebuildCharts(); }, 300);
+        }
+    }
+
+    // ── VIRTUAL COMPANION (Comnyang) ──────────────
+    const PET_EMOJIS = { idle:'🐱', walk:'🐈', happy:'😸', love:'😻', sleep:'😴', surprised:'🙀', cool:'😎' };
+    const PET_MESSAGES = {
+        greet:    ['Meow! 👋 How are you today?', 'Purrr~ Ready to track? 🐾', 'Hi there! Let\'s hit those goals! 💪', 'Nyaa~ You\'re back! 😸'],
+        logged:   ['Great job logging! 🎉', 'Purr-fect tracking! 🐾', 'Consistency is key! Keep it up! ✨', 'Meow! One step at a time! 🏃'],
+        goodcal:  ['Calories on point! 😎 Purrfect!', 'You\'re crushing the calorie goal! 🎯', 'Meow! Nice discipline today! 🐱'],
+        overcal:  ['A little over today 😅 Tomorrow we try again!', 'Meow... maybe less nasi lemak next time? 😂', 'Over budget! But one day won\'t ruin progress! 💪'],
+        goodstep: ['10k steps! You\'re on fire! 🔥', 'Amazing step count! Your legs are strong! 💪', 'Meow! That\'s a lot of walking! 🐾'],
+        lowstep:  ['Try a short walk later? 🚶 Even 10 mins helps!', 'Meow~ Move a little more today! 🐾', 'A little stroll goes a long way! 🌿'],
+        streak:   ['Streak is alive! Don\'t break the chain! 🔥', 'Meow! Consistent logging = real results! 📈', 'Your streak is impressive! Keep going! ⭐'],
+        idle:     ['*yawns* 😴 Still here if you need me!', 'Purrr... 💤', '*twitches tail*', 'Meow?  Logging time? 🐾', '*bats at your screen* Log something! 😸'],
+        tap:      ['Nyaa~! 😸', 'Stop that! I\'m trying to nap! 😂', 'Purrrr~ 💜', 'You found me! 🐾', 'Meow! Feed me data! 📊', '*purrs loudly* 😻'],
+        bmi:      ['BMI logged! Your journey is tracked! 📊', 'Meow! Weight data saved! 🏋️', 'Consistency in logging = better insights! ✨'],
+        water:    ['Hydrated cat approves! 💧😸', 'Meow! Water is life! 💧', 'Great hydration! Keep it up! 🌊'],
+    };
+
+    let petTimer = null, petIdleTimer = null, petBubbleTimer = null;
+    let petDir = 1; // 1 = right, -1 = left
+    let isPetMoving = false;
+
+    function togglePet() {
+        const isEnabled = document.getElementById('petToggle').checked;
+        localStorage.setItem('pet_enabled', isEnabled);
+        const pet = document.getElementById('virtualPet');
+        if (isEnabled) {
+            pet.style.display = 'block';
+            // reset to corner
+            pet.style.bottom = '80px'; pet.style.right = '16px'; pet.style.left = 'auto'; pet.style.top = 'auto';
+            setTimeout(() => petSayRandom('greet'), 1000);
+            petIdleTimer = setInterval(petIdleBehavior, 8000);
+            petTimer     = setInterval(petWander, 12000);
+        } else {
+            pet.style.display = 'none';
+            clearInterval(petTimer); clearInterval(petIdleTimer); clearPetBubble();
+        }
+    }
+
+    function petWander() {
+        const pet = document.getElementById('virtualPet');
+        if (!pet || pet.style.display === 'none') return;
+
+        const margin = 60;
+        const navH   = 72;
+        const maxX   = window.innerWidth  - margin;
+        const maxY   = window.innerHeight - navH - margin;
+
+        const newRight = Math.random() < 0.5
+            ? margin + Math.random() * (maxX - margin)
+            : null;
+        const useBottom = Math.random() < 0.7;
+        const newY = margin + Math.random() * (maxY - margin);
+
+        // determine direction
+        const rect = pet.getBoundingClientRect();
+        const curX = rect.left + rect.width / 2;
+        const targetX = newRight !== null ? (window.innerWidth - newRight) : curX;
+        petDir = targetX > curX ? 1 : -1;
+        pet.style.setProperty('--pet-dir', petDir);
+
+        // walk
+        document.getElementById('petBody').textContent = PET_EMOJIS.walk;
+        pet.classList.add('pet-walking');
+        isPetMoving = true;
+
+        // move
+        if (newRight !== null) { pet.style.right = newRight + 'px'; pet.style.left = 'auto'; }
+        if (useBottom) { pet.style.bottom = newY + 'px'; pet.style.top = 'auto'; }
+        else           { pet.style.top    = newY + 'px'; pet.style.bottom = 'auto'; }
+
+        // stop walking after transition ends (~2.2s)
+        setTimeout(() => {
+            pet.classList.remove('pet-walking');
+            document.getElementById('petBody').textContent = PET_EMOJIS.idle;
+            isPetMoving = false;
+        }, 2400);
+    }
+
+    function petIdleBehavior() {
+        if (isPetMoving) return;
+        const messages = PET_MESSAGES.idle;
+        const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
+        const today = diary.find(d => d.date === todayStr);
+
+        let pool = [...messages];
+        if (today) {
+            if (today.calories > (parseInt(localStorage.getItem('tgt_cal'))||2000)) pool = [...pool, ...PET_MESSAGES.overcal];
+            else pool = [...pool, ...PET_MESSAGES.goodcal];
+            if ((today.steps||0) >= 8000) pool = [...pool, ...PET_MESSAGES.goodstep];
+            else if ((today.steps||0) < 3000) pool = [...pool, ...PET_MESSAGES.lowstep];
+        }
+        // check streak
+        const streak = getStreakCount();
+        if (streak >= 3) pool = [...pool, ...PET_MESSAGES.streak];
+
+        petSay(pool[Math.floor(Math.random() * pool.length)]);
+        // random emotion face
+        const faces = [PET_EMOJIS.idle, PET_EMOJIS.happy, PET_EMOJIS.sleep];
+        document.getElementById('petBody').textContent = faces[Math.floor(Math.random()*faces.length)];
+        setTimeout(() => { if(!isPetMoving) document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 3000);
+    }
+
+    function petSayRandom(category) {
+        const pool = PET_MESSAGES[category] || PET_MESSAGES.idle;
+        petSay(pool[Math.floor(Math.random() * pool.length)]);
+        document.getElementById('petBody').textContent = PET_EMOJIS.happy;
+        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 3000);
+    }
+
+    function petSay(msg) {
+        const bubble = document.getElementById('petBubble');
+        if (!bubble) return;
+        clearPetBubble();
+        bubble.innerHTML = msg;
+        bubble.classList.add('show');
+        petBubbleTimer = setTimeout(() => bubble.classList.remove('show'), 4500);
+    }
+
+    function clearPetBubble() {
+        clearTimeout(petBubbleTimer);
+        const b = document.getElementById('petBubble');
+        if (b) b.classList.remove('show');
+    }
+
+    function petTapped() {
+        const pet = document.getElementById('virtualPet');
+        pet.classList.add('pet-bounce');
+        pet.addEventListener('animationend', () => pet.classList.remove('pet-bounce'), { once: true });
+        document.getElementById('petBody').textContent = PET_EMOJIS.surprised;
+        petSay(PET_MESSAGES.tap[Math.floor(Math.random() * PET_MESSAGES.tap.length)]);
+        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.love; }, 400);
+        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 2500);
+    }
+
+    function getStreakCount() {
+        const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        if (!diary.length) return 0;
+        let streak = 0, checkDate = new Date(diary[0].date); checkDate.setHours(0,0,0,0);
+        const today = new Date(todayStr); today.setHours(0,0,0,0);
+        if ((today - checkDate)/(86400000) > 1) return 0;
+        for (let i=0; i<diary.length; i++) {
+            const d = new Date(diary[i].date); d.setHours(0,0,0,0);
+            if (d.getTime()===checkDate.getTime()) { streak++; checkDate.setDate(checkDate.getDate()-1); }
+            else if (d.getTime() > checkDate.getTime()) continue;
+            else break;
+        }
+        return streak;
+    }
+
+    // Hook pet reactions into save events (called after each save)
+    function petReactToLog(type) {
+        const pet = document.getElementById('virtualPet');
+        if (!pet || pet.style.display === 'none') return;
+        if (type === 'diary') petSayRandom('logged');
+        else if (type === 'bmi') petSayRandom('bmi');
+        else if (type === 'water') petSayRandom('water');
+    }
+
+    // ── SHARE STATS ───────────────────────────────
+    async function shareStats() {
+        const streakEl = document.getElementById('streakMobile');
+        let streak = streakEl.style.display !== 'none' ? streakEl.innerText.replace('🔥 ', '') : '0';
+        
+        const bmiHist = JSON.parse(localStorage.getItem('bmiHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const latestWeight = bmiHist.length > 0 ? bmiHist[0].weight : 'N/A';
+        
+        const text = `🔥 I'm on a ${streak}-day logging streak on PowerUp Track! Current weight: ${latestWeight}kg. Feeling great! 💪`;
+        
+        if (navigator.share) {
+            try { await navigator.share({ title: 'My Health Stats', text: text }); }
+            catch (err) { console.log('Share canceled', err); }
+        } else {
+            navigator.clipboard.writeText(text);
+            showToast('Stats copied to clipboard!');
         }
     }
 
@@ -958,7 +1284,6 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             els.forEach(el => el.style.display = 'none');
         }
     }
-
 
     // ── HEALTH FACTS CARD ──────────────────────────
     const HEALTH_FACTS = [
@@ -1126,6 +1451,9 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         const gender   = document.getElementById('profileGender').value;
         const activity = parseFloat(document.getElementById('profileActivity').value);
         const bmiHist  = JSON.parse(localStorage.getItem('bmiHistory')||'[]');
+        
+        updateETA(); // Calculate ETA Whenever TDEE Updates
+
         if (!bmiHist.length || !age) {
             document.getElementById('tdeeBanner').style.display='none';
             document.getElementById('tdeePlaceholder').style.display='block';
@@ -1137,7 +1465,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         const todayLog = diary.find(d=>d.date===todayStr);
         const netEl = document.getElementById('tdeeNet');
         if (todayLog) {
-            const burn = Math.round(todayLog.steps*KCAL_PER_STEP);
+            const burn = Math.round((todayLog.steps||0)*KCAL_PER_STEP);
             const net  = todayLog.calories - burn - tdee;
             netEl.textContent = (net>0?'+':'')+net+' kcal';
             netEl.className = 'tdee-val '+(net>200?'red':net<-200?'green':'cyan');
@@ -1148,17 +1476,132 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('tdeePlaceholder').style.display='none';
     }
 
+    // ── SMART ETA CALCULATOR ──────────────────────
+    function updateETA() {
+        const targetWt = parseFloat(document.getElementById('targetWeight').value);
+        const bmiHist  = JSON.parse(localStorage.getItem('bmiHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const etaEl    = document.getElementById('etaDisplay');
+
+        // ── Guard: need both a target and at least one BMI entry ──
+        if (!targetWt || bmiHist.length === 0) {
+            etaEl.innerHTML = "Set target weight &amp; log BMI for ETA.";
+            return;
+        }
+
+        const currentWt = bmiHist[0].weight;
+        const diff      = currentWt - targetWt; // positive = need to lose, negative = need to gain
+
+        if (Math.abs(diff) < 0.2) {
+            etaEl.innerHTML = "🎉 Target Reached! Maintain the good work!";
+            return;
+        }
+
+        // ── Guard: need complete profile for TDEE ──
+        const age      = parseInt(document.getElementById('profileAge').value);
+        const gender   = document.getElementById('profileGender').value;
+        const activity = parseFloat(document.getElementById('profileActivity').value);
+        if (!age) {
+            etaEl.innerHTML = "Fill in your age &amp; gender profile for ETA.";
+            return;
+        }
+
+        const { tdee } = calcTDEE(currentWt, bmiHist[0].height, age, gender, activity);
+
+        // ── Use average actual intake if we have diary data, else fall back to target ──
+        const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
+        let avgIntake = 0;
+        if (diary.length >= 3) {
+            // use last 14 days of entries for the average
+            const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14);
+            const recent = diary.filter(d => new Date(d.date) >= cutoff);
+            const pool   = recent.length >= 3 ? recent : diary.slice(0, Math.min(diary.length, 14));
+            avgIntake    = pool.reduce((s, d) => s + (d.calories || 0), 0) / pool.length;
+        } else {
+            avgIntake = parseInt(document.getElementById('targetCalories').value) || 2000;
+        }
+
+        // ── Also subtract average steps burn from net intake ──
+        let avgStepsBurn = 0;
+        if (diary.length >= 3) {
+            const pool = diary.slice(0, Math.min(diary.length, 14));
+            const avgSteps = pool.reduce((s, d) => s + (d.steps || 0), 0) / pool.length;
+            avgStepsBurn   = avgSteps * KCAL_PER_STEP;
+        }
+
+        const netDailyIntake = avgIntake - avgStepsBurn;
+        const rawDeficit     = tdee - netDailyIntake; // positive = deficit (losing), negative = surplus (gaining)
+
+        // ── Check direction matches goal ──
+        if (diff > 0 && rawDeficit <= 0) {
+            etaEl.innerHTML = `⚠️ Your intake (~${Math.round(avgIntake)} kcal) exceeds TDEE (${tdee} kcal). No weight loss expected at current intake.`;
+            return;
+        }
+        if (diff < 0 && rawDeficit >= 0) {
+            etaEl.innerHTML = `⚠️ Your intake (~${Math.round(avgIntake)} kcal) is below TDEE (${tdee} kcal). No weight gain expected at current intake.`;
+            return;
+        }
+
+        // ── Safety cap: max 1 kg/week loss (0.143 kg/day), max 0.5 kg/week gain ──
+        // 7700 kcal = 1 kg fat
+        const KCAL_PER_KG  = 7700;
+        const MAX_LOSS_DAY = 0.143; // 1 kg/week
+        const MAX_GAIN_DAY = 0.071; // 0.5 kg/week
+
+        const rawDailyChange = rawDeficit / KCAL_PER_KG; // kg/day from deficit alone
+
+        // Optimistic (deficit/surplus at full calculated rate, capped at safe ceiling)
+        const optimisticRate = diff > 0
+            ? Math.min(rawDailyChange, MAX_LOSS_DAY)
+            : Math.max(rawDailyChange, -MAX_GAIN_DAY);
+
+        // Conservative: 60% of optimistic (plateaus, weekends, real life)
+        const conservativeRate = optimisticRate * 0.6;
+
+        const daysOptimistic    = Math.abs(diff / optimisticRate);
+        const daysConservative  = Math.abs(diff / conservativeRate);
+
+        if (daysOptimistic > 1825) { // > 5 years
+            etaEl.innerHTML = `ETA > 5 years at this rate. Consider adjusting your target or intake.`;
+            return;
+        }
+
+        const fmt = (days) => {
+            const d = new Date(); d.setDate(d.getDate() + Math.round(days));
+            const opts = { month: 'short', year: 'numeric' };
+            if (days < 60) opts.day = 'numeric';
+            return d.toLocaleDateString(undefined, opts);
+        };
+
+        const methodNote = diary.length >= 3
+            ? `Based on your avg intake of ~${Math.round(avgIntake)} kcal/day`
+            : `Based on your ${Math.round(avgIntake)} kcal target`;
+
+        const direction  = diff > 0 ? 'loss' : 'gain';
+        const kgPerWeek  = (Math.abs(optimisticRate) * 7).toFixed(2);
+
+        etaEl.innerHTML = `
+            🏁 ETA: <strong style="color:var(--primary);">${fmt(daysOptimistic)}</strong>
+            <span style="color:var(--text-muted);font-size:0.75rem;"> – </span>
+            <strong style="color:var(--accent);">${fmt(daysConservative)}</strong>
+            <span style="font-size:0.65rem;opacity:0.7;display:block;margin-top:4px;">
+                ~${kgPerWeek} kg/${direction}/week &bull; ${methodNote}
+            </span>`;
+    }
+
     // ── GOALS ─────────────────────────────────────
     function saveGoals() {
-        localStorage.setItem('tgt_cal',  document.getElementById('targetCalories').value||2000);
-        localStorage.setItem('tgt_prot', document.getElementById('targetProtein').value ||120);
-        localStorage.setItem('tgt_sod',  document.getElementById('targetSodium').value  ||2300);
+        localStorage.setItem('tgt_cal',    document.getElementById('targetCalories').value||2000);
+        localStorage.setItem('tgt_prot',   document.getElementById('targetProtein').value ||120);
+        localStorage.setItem('tgt_sod',    document.getElementById('targetSodium').value  ||2300);
+        localStorage.setItem('tgt_weight', document.getElementById('targetWeight').value  ||'');
+        updateETA();
         renderDiaryTable();
     }
     function loadGoals() {
-        document.getElementById('targetCalories').value = localStorage.getItem('tgt_cal')  || 2000;
-        document.getElementById('targetProtein').value  = localStorage.getItem('tgt_prot') || 120;
-        document.getElementById('targetSodium').value   = localStorage.getItem('tgt_sod')  || 2300;
+        document.getElementById('targetCalories').value = localStorage.getItem('tgt_cal')    || 2000;
+        document.getElementById('targetProtein').value  = localStorage.getItem('tgt_prot')   || 120;
+        document.getElementById('targetSodium').value   = localStorage.getItem('tgt_sod')    || 2300;
+        document.getElementById('targetWeight').value   = localStorage.getItem('tgt_weight') || '';
     }
     function clearAllData() {
         if (confirm('WARNING: This will permanently delete all your data.\n\nContinue?')) {
@@ -1167,6 +1610,9 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             document.getElementById('bmiResult').style.display='none';
             document.getElementById('tdeeBanner').style.display='none';
             document.getElementById('tdeePlaceholder').style.display='block';
+            // reset pet
+            const petToggle = document.getElementById('petToggle');
+            if (petToggle && petToggle.checked) { petToggle.checked = false; togglePet(); }
             showToast('All data cleared.');
         }
     }
@@ -1209,6 +1655,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('bmiDate').value=todayStr;
         document.getElementById('weight').value=''; document.getElementById('height').value='';
         renderBMITable(); updateCharts(); updateTDEE();
+        petReactToLog('bmi');
         showToast(`BMI ${bmi} saved for ${date}`);
     });
 
@@ -1289,6 +1736,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('water').value='0';
         
         renderDiaryTable(); updateCharts(); updateTDEE(); updateStreak();
+        petReactToLog('diary');
         showToast(`Day logged for ${date}`);
     });
 
@@ -1374,7 +1822,9 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             c3: s.getPropertyValue('--chart-3').trim(),
             c4: s.getPropertyValue('--chart-4').trim(),
             text: s.getPropertyValue('--text-muted').trim(),
-            grid: 'rgba(255,255,255,0.05)',
+            grid: s.getPropertyValue('--grid-line').trim(),
+            tooltipBg: s.getPropertyValue('--tooltip-bg').trim(),
+            tooltipText: s.getPropertyValue('--tooltip-text').trim()
         };
     }
 
@@ -1419,7 +1869,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             border:{color:tc.grid}
         });
         const xScale = { grid:{color:tc.grid}, ticks:{color:tc.text,font:{size:9},maxRotation:45}, border:{color:tc.grid} };
-        const baseOpts = { responsive:true, maintainAspectRatio:false, animation:{ duration:600, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(15,23,42,0.9)', titleColor:'#fff', bodyColor:tc.text, borderColor:tc.c1, borderWidth:1, padding:10, cornerRadius:10 } } };
+        const baseOpts = { responsive:true, maintainAspectRatio:false, animation:{ duration:600, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:tc.tooltipBg, titleColor:tc.tooltipText, bodyColor:tc.tooltipText, borderColor:tc.c1, borderWidth:1, padding:10, cornerRadius:10 } } };
 
         // MACRO — Doughnut
         const macCtx = document.getElementById('macroChart').getContext('2d');
@@ -1473,7 +1923,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
                 { data:[0], label:'Intake (kcal)', backgroundColor: tc.c2+'cc', borderColor: tc.c2, borderWidth:1, borderRadius:6, borderSkipped:false },
                 { data:[0], label:'Target', type:'line', borderColor: tc.c4+'88', borderWidth:1.5, borderDash:[4,4], pointRadius:0, fill:false }
             ]},
-            options:{ ...baseOpts, plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:'#fff', font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } }, scales:{ x:xScale, y:{...baseScale(), title:{display:true,text:'kcal',color:tc.c2,font:{size:9}}} } }
+            options:{ ...baseOpts, plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:tc.text, font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } }, scales:{ x:xScale, y:{...baseScale(), title:{display:true,text:'kcal',color:tc.c2,font:{size:9}}} } }
         });
 
         // STEPS — bars + burn line
@@ -1485,7 +1935,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
                 { data:[0], label:'Burn (kcal)', type:'line', borderColor:tc.c1, backgroundColor: makeGradient(stpCtx, tc.c1), borderWidth:2, tension:0.4, fill:true, pointBackgroundColor:tc.c1, pointBorderColor:'#fff', pointBorderWidth:1.5, pointRadius:3, pointHoverRadius:6, yAxisID:'y1' }
             ]},
             options:{ ...baseOpts,
-                plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:'#fff', font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } },
+                plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:tc.text, font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } },
                 scales:{ x:xScale,
                     y:{ ...baseScale('left'), title:{ display:true, text:'Steps', color:tc.c3, font:{size:9} } },
                     y1:{ ...baseScale('right'), grid:{drawOnChartArea:false}, title:{ display:true, text:'kcal burned', color:tc.c1, font:{size:9} } }
@@ -1497,7 +1947,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     }
 
     function updateCharts() {
-        if(!bmiChartInstance||!calorieChartInstance||!stepsChartInstance||!macroChartInstance) return;
+        if(!bmiChartInstance||!calorieChartInstance||!stepsChartInstance) return;
         const days=parseInt(document.getElementById('timeRange').value);
         const cutOff=new Date(); cutOff.setDate(cutOff.getDate()-days);
         const bmiH =JSON.parse(localStorage.getItem('bmiHistory')  ||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
@@ -1524,28 +1974,29 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             let logDays = fD.length;
             fD.forEach(log => { p+=log.protein||0; c+=log.carbs||0; f+=log.fat||0; });
             
-            if (p===0 && c===0 && f===0) {
-                macroChartInstance.data.datasets[0].data = [1,1,1]; // fallback visual
-            } else {
-                macroChartInstance.data.datasets[0].data = [
-                    Math.round(p / logDays),
-                    Math.round(c / logDays),
-                    Math.round(f / logDays)
-                ];
+            if (macroChartInstance) {
+                if (p===0 && c===0 && f===0) {
+                    macroChartInstance.data.datasets[0].data = [1,1,1];
+                } else {
+                    macroChartInstance.data.datasets[0].data = [
+                        Math.round(p / logDays),
+                        Math.round(c / logDays),
+                        Math.round(f / logDays)
+                    ];
+                }
             }
 
         } else {
             calorieChartInstance.data.labels=['Waiting']; calorieChartInstance.data.datasets[0].data=[0]; calorieChartInstance.data.datasets[1].data=[0];
             stepsChartInstance.data.labels=['Waiting']; stepsChartInstance.data.datasets[0].data=[0]; stepsChartInstance.data.datasets[1].data=[0];
-            macroChartInstance.data.datasets[0].data=[1,1,1];
+            if(macroChartInstance) macroChartInstance.data.datasets[0].data=[1,1,1];
         }
         calorieChartInstance.update('active');
         stepsChartInstance.update('active');
-        macroChartInstance.update('active');
+        if(macroChartInstance) macroChartInstance.update('active');
     }
 
     // ── CSV EXPORT ────────────────────────────────
-    // Appended WATER_ML to column headers to ensure backward compatibility
     function exportData() {
         const bmi=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
         const diary=JSON.parse(localStorage.getItem('diaryHistory')||'[]');
@@ -1575,7 +2026,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
                 const cols=line.split(','),type=cols[0],date=cols[1];
                 if(type==='PROFILE'){pAge=(cols[11]||'').replace(/"/g,'');pGender=(cols[12]||'').replace(/"/g,'');pActivity=(cols[13]||'').replace(/"/g,'');}
                 else if(type==='BMI'&&date)       newBmi.push({date,weight:parseFloat(cols[2])||0,height:parseFloat(cols[3])||0,bmi:parseFloat(cols[4])||0});
-                else if(type==='NUTRITION'&&date) newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0,water:parseInt(cols[14])||0}); // col 14 ensures old CSVs parse perfectly as 0
+                else if(type==='NUTRITION'&&date) newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0,water:parseInt(cols[14])||0}); 
             }
             if(newBmi.length>0||newDiary.length>0){
                 if(confirm(`Found ${newBmi.length} BMI and ${newDiary.length} nutrition entries. Restore?`)){
