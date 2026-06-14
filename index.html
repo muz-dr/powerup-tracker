@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="cyber">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Advanced Health &amp; Nutrition Dashboard</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#06b6d4">
+    <meta name="theme-color" content="#06b6d4" id="metaThemeColor">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -19,50 +19,103 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
+        /* ── THEMES ─────────────────────────────────── */
+        :root, [data-theme="cyber"] {
             --primary: #06b6d4; --accent: #d946ef;
-            --bg: #0b0f19; --card: #111827;
+            --bg: #0b0f19; --bg2: #1e1b4b;
+            --card: rgba(17,24,39,0.75); --card-solid: #111827;
             --text: #f3f4f6; --text-muted: #9ca3af;
             --border: #374151;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --radius: 14px;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --chart-1: #06b6d4; --chart-2: #d946ef; --chart-3: #a855f7; --chart-4: #22d3ee;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0b0f19 70%);
+            --topbar-bg: rgba(11,15,25,0.88);
+            --nav-bg: rgba(17,24,39,0.96);
         }
+        [data-theme="forest"] {
+            --primary: #10b981; --accent: #f59e0b;
+            --bg: #0a1a0e; --bg2: #0f2d1a;
+            --card: rgba(15,30,20,0.8); --card-solid: #0f1e14;
+            --text: #ecfdf5; --text-muted: #6ee7b7;
+            --border: #1f4d2e;
+            --success: #34d399; --warning: #fbbf24; --danger: #f87171;
+            --radius: 14px;
+            --chart-1: #10b981; --chart-2: #f59e0b; --chart-3: #34d399; --chart-4: #6ee7b7;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #0f2d1a 0%, #0a1a0e 70%);
+            --topbar-bg: rgba(10,26,14,0.92);
+            --nav-bg: rgba(15,30,20,0.97);
+        }
+        [data-theme="sunset"] {
+            --primary: #f97316; --accent: #ec4899;
+            --bg: #1a0a0f; --bg2: #2d1020;
+            --card: rgba(30,15,20,0.8); --card-solid: #1e0f14;
+            --text: #fff1f2; --text-muted: #fca5a5;
+            --border: #4d1f2e;
+            --success: #fb923c; --warning: #fbbf24; --danger: #f43f5e;
+            --radius: 14px;
+            --chart-1: #f97316; --chart-2: #ec4899; --chart-3: #fb923c; --chart-4: #fbbf24;
+            --bg-gradient: radial-gradient(circle at 50% 0%, #2d1020 0%, #1a0a0f 70%);
+            --topbar-bg: rgba(26,10,15,0.92);
+            --nav-bg: rgba(30,15,20,0.97);
+        }
+
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg) 70%);
+            background: var(--bg-gradient);
+            background-attachment: fixed;
             color: var(--text); margin: 0; padding: 0; line-height: 1.5;
             min-height: 100dvh;
-            padding-bottom: calc(64px + var(--safe-bottom));
+            padding-bottom: calc(68px + var(--safe-bottom, 0px));
+            transition: background 0.4s, color 0.3s;
         }
 
-        /* TOP BAR */
+        /* ── TOP BAR ──────────────────────────────── */
         .app-topbar {
             position: sticky; top: 0; z-index: 50;
-            background: rgba(11,15,25,0.88);
+            background: var(--topbar-bg);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             border-bottom: 1px solid rgba(255,255,255,0.07);
-            padding: calc(var(--safe-top) + 10px) 14px 10px;
-            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .topbar-row {
+            display: flex; align-items: center; justify-content: space-between; width: 100%;
         }
         h1 {
-            margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.04em;
+            margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.04em;
             background: linear-gradient(to right, var(--primary), var(--accent));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             white-space: nowrap; flex-shrink: 1; min-width: 0;
         }
         .topbar-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
 
-        /* BOTTOM NAV */
+        /* THEME CYCLE BUTTON */
+        .theme-btn {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px; padding: 5px 10px 5px 8px;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: background 0.2s, transform 0.1s;
+            color: var(--text); font-size: 0.72rem; font-weight: 700;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .theme-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.12); }
+        .theme-btn-swatch {
+            width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        /* ── BOTTOM NAV ─────────────────────────── */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-            background: rgba(17,24,39,0.96);
+            background: var(--nav-bg);
             backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             border-top: 1px solid rgba(255,255,255,0.07);
-            display: flex; padding-bottom: var(--safe-bottom);
+            display: flex; padding-bottom: env(safe-area-inset-bottom,0px);
         }
         .bottom-nav a {
             flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -74,22 +127,23 @@
         .bottom-nav a .nav-icon { font-size: 1.25rem; line-height: 1; }
         .bottom-nav a.active { color: var(--primary); }
 
-        /* LAYOUT */
+        /* ── LAYOUT ─────────────────────────────── */
         .container { max-width: 1100px; margin: 0 auto; padding: 14px; }
-        .section-anchor { scroll-margin-top: 68px; }
+        .section-anchor { scroll-margin-top: 96px; }
 
-        /* CARDS */
+        /* ── CARDS ──────────────────────────────── */
         .card {
-            background: rgba(17,24,39,0.75);
+            background: var(--card);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-radius: var(--radius); padding: 16px;
-            box-shadow: 0 8px 24px -8px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 8px 32px -8px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.06);
             margin-bottom: 14px; min-width: 0; overflow: hidden;
+            transition: background 0.4s, border-color 0.3s;
         }
         .card:last-child { margin-bottom: 0; }
-        h2 { color: #fff; font-size: 1.05rem; margin: 0 0 14px; display: flex; align-items: center; gap: 7px; font-weight: 700; }
-        h3 { color: #e5e7eb; font-size: 0.9rem; margin: 12px 0 7px; font-weight: 600; }
+        h2 { color: var(--text); font-size: 1.05rem; margin: 0 0 14px; display: flex; align-items: center; gap: 7px; font-weight: 700; }
+        h3 { color: var(--text); font-size: 0.9rem; margin: 12px 0 7px; font-weight: 600; opacity: 0.9; }
 
         /* SECTION LABEL */
         .section-label {
@@ -100,32 +154,28 @@
 
         /* PROFILE / GOALS */
         .goals-card { border-left: 3px solid var(--accent); }
-        .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .goals-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .goals-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         @media (max-width: 480px) {
-            .goals-grid { grid-template-columns: 1fr; gap: 8px; }
+            .goals-grid   { grid-template-columns: 1fr; gap: 8px; }
             .goals-grid-3 { grid-template-columns: 1fr; gap: 8px; }
         }
 
-        /* TDEE RESULT BANNER */
+        /* TDEE BANNER */
         .tdee-banner {
             margin-top: 14px;
             background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(217,70,239,0.08));
-            border: 1px solid rgba(6,182,212,0.3);
-            border-radius: 12px;
-            padding: 14px 16px;
-            display: grid;
-            grid-template-columns: repeat(3,1fr);
-            gap: 10px;
-            text-align: center;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 14px 16px;
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; text-align: center;
         }
         @media (max-width: 480px) { .tdee-banner { grid-template-columns: 1fr 1fr; } }
         .tdee-item label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 3px; }
-        .tdee-item .tdee-val { font-size: 1.15rem; font-weight: 800; color: #fff; }
-        .tdee-item .tdee-val.cyan { color: var(--primary); }
-        .tdee-item .tdee-val.purple { color: #c084fc; }
-        .tdee-item .tdee-val.green { color: #34d399; }
-        .tdee-item .tdee-val.red   { color: #f87171; }
+        .tdee-item .tdee-val { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+        .tdee-item .tdee-val.cyan   { color: var(--primary); }
+        .tdee-item .tdee-val.purple { color: var(--accent); }
+        .tdee-item .tdee-val.green  { color: var(--success); }
+        .tdee-item .tdee-val.red    { color: var(--danger); }
 
         /* FORMS */
         .form-group { margin-bottom: 11px; }
@@ -134,25 +184,25 @@
             font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);
         }
         input, select, textarea {
-            width: 100%; padding: 13px 13px; border: 1px solid var(--border);
+            width: 100%; padding: 13px; border: 1px solid var(--border);
             border-radius: 10px; font-size: 16px;
-            background-color: rgba(15,23,42,0.6); color: #fff;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: rgba(0,0,0,0.25); color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
             -webkit-appearance: none; appearance: none;
         }
         input:focus, select:focus, textarea:focus {
             outline: none; border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
-            background-color: rgba(15,23,42,0.9);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+            background-color: rgba(0,0,0,0.4);
         }
 
         /* BUTTONS */
         .btn {
-            background: linear-gradient(135deg, var(--primary), #0891b2);
+            background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, black));
             color: #fff; padding: 14px 16px; border: none; border-radius: 10px;
             cursor: pointer; font-weight: 700; font-size: 0.95rem; width: 100%;
-            transition: opacity 0.15s, transform 0.1s; display: inline-block;
-            text-align: center; box-shadow: 0 4px 12px rgba(6,182,212,0.25);
+            transition: opacity 0.15s, transform 0.1s; display: inline-block; text-align: center;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 30%, transparent);
             -webkit-tap-highlight-color: transparent; touch-action: manipulation;
         }
         .btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -164,11 +214,14 @@
         }
         .btn-danger {
             background: transparent; color: var(--danger);
-            border: 1.5px solid var(--danger); box-shadow: none;
-            padding: 9px 12px; font-size: 0.8rem;
+            border: 1.5px solid var(--danger); box-shadow: none; padding: 9px 12px; font-size: 0.8rem;
         }
-        .btn-glow { background: linear-gradient(135deg, var(--accent), #c084fc); box-shadow: 0 4px 12px rgba(217,70,239,0.25); }
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--primary)));
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent);
+        }
         .btn-sm { padding: 10px 14px; font-size: 0.83rem; }
+        .guide-btn { border-style: dashed; }
 
         /* FORM GRIDS */
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
@@ -189,31 +242,27 @@
         /* TABLES */
         .table-scroll {
             overflow-x: auto; -webkit-overflow-scrolling: touch;
-            border: 1px solid var(--border); border-radius: 12px;
-            background: rgba(15,23,42,0.4);
+            border: 1px solid var(--border); border-radius: 12px 12px 0 0;
+            background: rgba(0,0,0,0.2);
         }
         .table-scroll-inner { overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: transparent; min-width: 380px; }
-        #diaryTable { min-width: 760px; }
+        #diaryTable { min-width: 780px; }
         th, td { padding: 10px 11px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.04); white-space: nowrap; }
         th {
-            background-color: #1f2937; color: #e5e7eb; font-weight: 700;
+            background-color: rgba(0,0,0,0.3); color: var(--text); font-weight: 700;
             font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
             position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border);
         }
-        tr:hover td { background-color: rgba(255,255,255,0.02); }
+        tr:hover td { background-color: rgba(255,255,255,0.025); }
         tr:last-child td { border-bottom: none; }
 
-        /* WEEKLY AVERAGE ROW */
         tr.avg-row td {
-            background: rgba(6,182,212,0.07) !important;
-            border-top: 2px solid rgba(6,182,212,0.3);
-            border-bottom: 2px solid rgba(6,182,212,0.3);
-            color: #22d3ee;
-            font-weight: 700;
-            font-size: 0.75rem;
+            background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
+            border-top: 1.5px solid color-mix(in srgb, var(--primary) 35%, transparent);
+            border-bottom: 1.5px solid color-mix(in srgb, var(--primary) 35%, transparent);
+            color: var(--primary); font-weight: 700; font-size: 0.75rem;
         }
-        tr.avg-row td:first-child { color: #22d3ee; }
 
         .action-cell { text-align: center; }
         .btn-row-action {
@@ -224,7 +273,7 @@
         }
         .btn-row-edit   { color: var(--primary); }
         .btn-row-delete { color: var(--danger); }
-        .btn-row-edit:active   { background: rgba(6,182,212,0.15); }
+        .btn-row-edit:active   { background: color-mix(in srgb, var(--primary) 15%, transparent); }
         .btn-row-delete:active { background: rgba(239,68,68,0.15); }
 
         /* BADGES */
@@ -240,17 +289,13 @@
         /* PAGINATION */
         .pagination-bar {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 12px; flex-wrap: wrap; gap: 8px;
-            border-top: 1px solid var(--border);
-            background: rgba(15,23,42,0.5);
-            border-radius: 0 0 12px 12px;
+            padding: 9px 12px; flex-wrap: wrap; gap: 8px;
+            border: 1px solid var(--border); border-top: none;
+            background: rgba(0,0,0,0.2); border-radius: 0 0 12px 12px;
         }
         .pagination-info { font-size: 0.75rem; color: var(--text-muted); }
         .pagination-controls { display: flex; align-items: center; gap: 6px; }
-        .pagination-controls select {
-            padding: 6px 8px; font-size: 0.75rem; border-radius: 7px;
-            width: auto; min-width: 0;
-        }
+        .pagination-controls select { padding: 6px 8px; font-size: 0.75rem; border-radius: 7px; width: auto; min-width: 0; }
         .page-btn {
             background: rgba(255,255,255,0.06); border: 1px solid var(--border);
             color: var(--text); padding: 6px 10px; border-radius: 7px;
@@ -258,73 +303,53 @@
             -webkit-tap-highlight-color: transparent; min-width: 34px; min-height: 34px;
             display: inline-flex; align-items: center; justify-content: center;
         }
-        .page-btn:active { background: rgba(6,182,212,0.15); }
-        .page-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .page-btn:active { background: color-mix(in srgb, var(--primary) 15%, transparent); }
         .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         /* CHARTS */
         .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
         .chart-controls { display: flex; gap: 8px; flex-wrap: wrap; }
         .chart-select { width: auto; padding: 8px 11px; font-size: 0.8rem; border-radius: 8px; min-width: 120px; }
-        .chart-container { position: relative; height: 220px; width: 100%; }
+        .chart-container { position: relative; height: 230px; width: 100%; }
         .charts-grid { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: stretch; }
         @media (min-width: 768px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
         .charts-grid .chart-inner-card { margin-bottom: 0; }
-        .chart-inner-card { background: rgba(15,23,42,0.5); border-radius: 12px; padding: 13px; border: 1px solid rgba(255,255,255,0.04); }
+        .chart-inner-card {
+            background: rgba(0,0,0,0.25); border-radius: 12px; padding: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .chart-inner-card h3 { margin-top: 0; margin-bottom: 10px; font-size: 0.85rem; opacity: 0.85; }
 
-        /* PROMPT BOX */
+        /* PROMPT / AI */
         .prompt-box {
-            background: rgba(15,23,42,0.8); border: 1px solid rgba(6,182,212,0.3);
+            background: rgba(0,0,0,0.3); border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
             border-radius: 12px; padding: 40px 14px 14px;
             font-family: 'Courier New', Courier, monospace; font-size: 0.78rem;
-            color: #22d3ee; white-space: pre-wrap; position: relative; margin-top: 10px; word-break: break-word;
+            color: var(--primary); white-space: pre-wrap; position: relative; margin-top: 10px; word-break: break-word;
         }
         .copy-tag {
-            position: absolute; top: 10px; right: 10px; background: #1f2937;
+            position: absolute; top: 10px; right: 10px; background: var(--card-solid);
             color: var(--text); padding: 5px 12px; font-family: sans-serif;
             font-size: 0.73rem; font-weight: 600; border-radius: 6px;
             cursor: pointer; border: 1px solid var(--border); -webkit-tap-highlight-color: transparent;
         }
         .copy-tag:active { background: var(--primary); color: #fff; }
 
-        /* HOW TO USE STEPS */
         .how-to-steps { margin: 14px 0 0; display: flex; flex-direction: column; gap: 10px; }
-        .how-step {
-            display: flex; gap: 12px; align-items: flex-start;
-            background: rgba(255,255,255,0.03); border-radius: 10px; padding: 11px 13px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .how-step-num {
-            flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 0.75rem; color: #fff; margin-top: 1px;
-        }
-        .how-step-text { font-size: 0.82rem; color: #d1d5db; line-height: 1.5; }
-        .how-step-text strong { color: #fff; }
-        .tip-box {
-            margin-top: 12px; background: rgba(217,70,239,0.08);
-            border: 1px solid rgba(217,70,239,0.25); border-radius: 10px;
-            padding: 11px 13px; font-size: 0.8rem; color: #e9d5ff; line-height: 1.5;
-        }
+        .how-step { display: flex; gap: 12px; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 11px 13px; border: 1px solid rgba(255,255,255,0.05); }
+        .how-step-num { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff; margin-top: 1px; }
+        .how-step-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+        .how-step-text strong { color: var(--text); }
+        .tip-box { margin-top: 12px; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); border-radius: 10px; padding: 11px 13px; font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
 
         /* FILE INPUT */
         .file-input-wrapper { position: relative; display: inline-block; }
         .file-input-wrapper input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
 
         /* MODAL */
-        .modal {
-            display: none; position: fixed; z-index: 200; inset: 0;
-            background: rgba(11,15,25,0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            align-items: flex-end; justify-content: center;
-        }
+        .modal { display: none; position: fixed; z-index: 200; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: flex-end; justify-content: center; }
         .modal.open { display: flex; }
-        .modal-content {
-            background: var(--card); border: 1px solid rgba(255,255,255,0.1);
-            width: 100%; max-width: 520px; border-radius: 20px 20px 0 0;
-            padding: 20px 18px calc(18px + var(--safe-bottom));
-            box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.7); animation: slideUp 0.22s ease;
-        }
+        .modal-content { background: var(--card-solid); border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 520px; border-radius: 20px 20px 0 0; padding: 20px 18px calc(18px + env(safe-area-inset-bottom,0px)); box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.7); animation: slideUp 0.22s ease; }
         @keyframes slideUp { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @media (min-width: 600px) { .modal { align-items: center; padding: 16px; } .modal-content { border-radius: 16px; padding-bottom: 20px; } }
         .modal-drag { width: 38px; height: 4px; background: var(--border); border-radius: 4px; margin: 0 auto 16px; }
@@ -333,58 +358,154 @@
 
         /* TOAST */
         .toast {
-            position: fixed; bottom: calc(68px + var(--safe-bottom) + 10px); left: 50%;
+            position: fixed; bottom: calc(104px + env(safe-area-inset-bottom,0px) + 10px); left: 50%;
             transform: translateX(-50%) translateY(16px);
-            background: #1f2937; border: 1px solid var(--border); color: var(--text);
+            background: var(--card-solid); border: 1px solid var(--border); color: var(--text);
             padding: 10px 20px; border-radius: 50px; font-size: 0.83rem; font-weight: 600;
             white-space: nowrap; opacity: 0; pointer-events: none;
             transition: opacity 0.25s, transform 0.25s; z-index: 300; max-width: 88vw; text-align: center;
         }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* DESKTOP */
+        /* ── HEALTH FACTS CARD ──────────────────── */
+        .facts-card {
+            background: linear-gradient(145deg, rgba(6,182,212,0.06), rgba(217,70,239,0.04));
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+        .facts-nav {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px; gap: 10px;
+        }
+        .facts-dots {
+            display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; flex: 1;
+        }
+        .facts-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--border); cursor: pointer;
+            transition: background 0.25s, transform 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            border: none; padding: 0;
+        }
+        .facts-dot.active {
+            background: var(--primary); transform: scale(1.4);
+        }
+        .fact-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            color: var(--text); width: 34px; height: 34px; border-radius: 50%;
+            cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent; flex-shrink: 0; transition: background 0.15s;
+        }
+        .fact-btn:active { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+
+        .fact-display {
+            min-height: 110px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 10px 6px; gap: 10px;
+            position: relative; overflow: hidden;
+        }
+        .fact-icon-big {
+            font-size: 2.4rem; line-height: 1;
+            filter: drop-shadow(0 0 12px color-mix(in srgb, var(--primary) 40%, transparent));
+            animation: factPulse 3s ease-in-out infinite;
+        }
+        @keyframes factPulse {
+            0%,100% { transform: scale(1); }
+            50%      { transform: scale(1.08); }
+        }
+        .fact-text {
+            font-size: 0.9rem; font-weight: 600; color: var(--text);
+            line-height: 1.5; max-width: 340px;
+        }
+        .fact-text strong { color: var(--primary); font-size: 1rem; }
+        .fact-source {
+            font-size: 0.68rem; color: var(--text-muted); font-style: italic;
+        }
+        .fact-category {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em;
+            background: color-mix(in srgb, var(--primary) 15%, transparent);
+            color: var(--primary);
+            border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+        }
+        .fact-transition-enter { animation: factIn 0.35s ease forwards; }
+        .fact-transition-exit  { animation: factOut 0.2s ease forwards; }
+        @keyframes factIn  { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes factOut { from { opacity:1; transform: translateY(0); }   to { opacity:0; transform: translateY(-10px); } }
+
+        /* ── DESKTOP ─────────────────────────────── */
         .desktop-header { display: none; }
         @media (min-width: 768px) {
             body { padding-bottom: 20px; }
             .app-topbar { display: none; }
             .bottom-nav { display: none; }
             .container { padding: 24px 20px; }
-            .desktop-header {
-                display: flex; justify-content: space-between; align-items: center;
-                flex-wrap: wrap; gap: 14px; margin-bottom: 20px;
-                padding-bottom: 20px; border-bottom: 1px dashed var(--border);
-            }
+            .desktop-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
             .desktop-header h1 { font-size: 2rem; }
             .desktop-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
             .section-anchor { scroll-margin-top: 20px; }
             .section-label { margin-top: 24px; }
         }
+
+        /* ── TOUR GUIDE OVERLAY ──────────────────── */
+        .tour-spotlight {
+            display: none; position: fixed; z-index: 9998; /* behind tooltip */
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.8), 0 0 20px var(--primary);
+            border: 2px dashed var(--primary); border-radius: 16px;
+            transition: all 0.35s ease; pointer-events: none;
+        }
+        .tour-tooltip {
+            display: none; position: fixed; z-index: 10000;
+            background: var(--card-solid); border: 1px solid color-mix(in srgb, var(--primary) 50%, transparent);
+            border-radius: 14px; padding: 20px; width: 90%; max-width: 320px;
+            text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            /* Important: omit 'top' and 'bottom' from transition so it snaps cleanly between hemispheres */
+            transition: opacity 0.3s ease;
+        }
+        .tour-tooltip strong { color: var(--primary); font-size: 1.1rem; display: block; margin-bottom: 8px; }
+        .tour-text { font-size: 0.85rem; line-height: 1.5; color: var(--text); }
+        .tour-nav { display: flex; justify-content: space-between; margin-top: 18px; gap: 10px; }
     </style>
 </head>
 <body>
 
 <!-- MOBILE TOP BAR -->
-<header class="app-topbar">
-    <h1>&#x26A1; PowerUp Track</h1>
-    <div class="topbar-actions">
-        <button class="btn btn-outline" style="padding:8px 10px;font-size:0.75rem;" onclick="exportData()">&#x1F4BE;</button>
-        <div class="file-input-wrapper">
-            <button class="btn btn-outline" style="padding:8px 10px;font-size:0.75rem;">&#x1F4E4;</button>
-            <input type="file" id="csvImportMobile" accept=".csv" onchange="importData(this)">
+<header class="app-topbar tour-target-manage">
+    <div class="topbar-row topbar-row-1">
+        <h1>&#x26A1; PowerUp Track</h1>
+    </div>
+    <div class="topbar-row topbar-row-2">
+        <button class="theme-btn" onclick="cycleTheme()" id="themeBtnMobile">
+            <span style="opacity:0.7;font-weight:400;margin-right:2px;">Theme:</span>
+            <span id="themeLabelMobile" style="margin-right:4px;">Cyber</span>
+            <span class="theme-btn-swatch" id="themeSwatchMobile"></span>
+        </button>
+        <div class="topbar-actions">
+            <button class="btn btn-outline guide-btn" style="padding:6px 10px;font-size:0.75rem;" onclick="startTour()">&#x1F9ED; Guide</button>
+            <button class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;" onclick="exportData()" title="Export">&#x1F4BE;</button>
+            <div class="file-input-wrapper">
+                <button class="btn btn-outline" style="padding:6px 10px;font-size:0.75rem;" title="Import">&#x1F4E4;</button>
+                <input type="file" id="csvImportMobile" accept=".csv" onchange="importData(this)">
+            </div>
+            <button class="btn btn-danger" style="padding:6px 10px;font-size:0.75rem;border-radius:10px;" onclick="clearAllData()" title="Delete All">&#x1F5D1;</button>
         </div>
-        <button class="btn btn-danger" style="padding:8px 10px;font-size:0.75rem;border-radius:10px;" onclick="clearAllData()">&#x1F5D1;</button>
     </div>
 </header>
 
 <div class="container">
 
     <!-- DESKTOP HEADER -->
-    <header class="desktop-header">
+    <header class="desktop-header tour-target-manage">
         <h1>&#x26A1; PowerUp Track</h1>
         <div class="desktop-header-actions">
-            <button class="btn btn-outline btn-sm" onclick="exportData()">&#x1F4BE; Export (CSV)</button>
+            <button class="theme-btn" onclick="cycleTheme()" id="themeBtnDesktop">
+                <span class="theme-btn-swatch" id="themeSwatchDesktop"></span>
+                <span id="themeLabelDesktop">Cyber</span>
+            </button>
+            <button class="btn btn-outline btn-sm guide-btn" onclick="startTour()">&#x1F9ED; Guide</button>
+            <button class="btn btn-outline btn-sm" onclick="exportData()">&#x1F4BE; Export</button>
             <div class="file-input-wrapper">
-                <button class="btn btn-outline btn-sm">&#x1F4E4; Import (CSV)</button>
+                <button class="btn btn-outline btn-sm">&#x1F4E4; Import</button>
                 <input type="file" id="csvImport" accept=".csv" onchange="importData(this)">
             </div>
             <button class="btn btn-danger btn-sm" onclick="clearAllData()">&#x1F5D1; Reset</button>
@@ -394,7 +515,7 @@
     <!-- PROFILE & GOALS -->
     <div id="section-goals" class="section-anchor">
         <p class="section-label">Profile &amp; Goals</p>
-        <div class="card goals-card">
+        <div class="card goals-card tour-target-profile">
             <h2>&#x1F464; Personal Profile</h2>
             <div class="goals-grid">
                 <div class="form-group">
@@ -435,27 +556,13 @@
                     <input type="number" id="targetSodium" value="2300" onchange="saveGoals()">
                 </div>
             </div>
-
-            <!-- TDEE RESULT BANNER -->
             <div class="tdee-banner" id="tdeeBanner" style="display:none;">
-                <div class="tdee-item">
-                    <label>BMR</label>
-                    <div class="tdee-val purple" id="tdeeBMR">—</div>
-                    <div style="font-size:0.6rem;color:var(--text-muted);">kcal/day at rest</div>
-                </div>
-                <div class="tdee-item">
-                    <label>TDEE</label>
-                    <div class="tdee-val cyan" id="tdeeTDEE">—</div>
-                    <div style="font-size:0.6rem;color:var(--text-muted);">maintenance kcal</div>
-                </div>
-                <div class="tdee-item">
-                    <label>Today Net</label>
-                    <div class="tdee-val" id="tdeeNet">—</div>
-                    <div style="font-size:0.6rem;color:var(--text-muted);">vs TDEE</div>
-                </div>
+                <div class="tdee-item"><label>BMR</label><div class="tdee-val purple" id="tdeeBMR">—</div><div style="font-size:0.6rem;color:var(--text-muted);">kcal/day at rest</div></div>
+                <div class="tdee-item"><label>TDEE</label><div class="tdee-val cyan" id="tdeeTDEE">—</div><div style="font-size:0.6rem;color:var(--text-muted);">maintenance kcal</div></div>
+                <div class="tdee-item"><label>Today Net</label><div class="tdee-val" id="tdeeNet">—</div><div style="font-size:0.6rem;color:var(--text-muted);">vs TDEE</div></div>
             </div>
             <p id="tdeePlaceholder" style="font-size:0.78rem;color:var(--text-muted);margin:10px 0 0;text-align:center;">
-                Fill in age, gender &amp; use latest BMI weight to see your TDEE &amp; net calories.
+                Fill in age, gender &amp; log a BMI entry to see your TDEE &amp; net calories.
             </p>
         </div>
     </div>
@@ -464,8 +571,8 @@
     <div id="section-log" class="section-anchor">
         <p class="section-label">Log</p>
         <div class="section-grid">
-            <!-- BMI -->
-            <div class="card">
+            
+            <div class="card tour-target-bmi">
                 <h2>&#x2696;&#xFE0F; BMI Tracking</h2>
                 <form id="bmiForm">
                     <div class="form-group">
@@ -491,7 +598,7 @@
                         <table id="bmiTable">
                             <thead><tr>
                                 <th>Date</th><th>Weight</th><th>Height</th><th>BMI</th>
-                                <th style="width:70px;text-align:center;">Actions</th>
+                                <th style="width:70px;text-align:center;">Act.</th>
                             </tr></thead>
                             <tbody></tbody>
                         </table>
@@ -501,10 +608,8 @@
                     <div class="pagination-info" id="bmiPagInfo"></div>
                     <div class="pagination-controls">
                         <select id="bmiRowsPer" onchange="bmiPage=1;renderBMITable()">
-                            <option value="10" selected>10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="150">150</option>
+                            <option value="10" selected>10</option><option value="20">20</option>
+                            <option value="30">30</option><option value="150">150</option>
                         </select>
                         <button class="page-btn" id="bmiPrev" onclick="bmiPage--;renderBMITable()">&#x2039;</button>
                         <span id="bmiPageLabel" style="font-size:0.75rem;color:var(--text-muted);min-width:40px;text-align:center;"></span>
@@ -513,43 +618,21 @@
                 </div>
             </div>
 
-            <!-- DIARY FORM -->
-            <div class="card">
+            <div class="card tour-target-log">
                 <h2>&#x1F951; Daily Intake &amp; Activity</h2>
                 <form id="diaryForm">
                     <div class="form-row-2">
-                        <div class="form-group">
-                            <label for="logDate">Date</label>
-                            <input type="date" id="logDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="calories">Calories (kcal)</label>
-                            <input type="number" id="calories" placeholder="2100" inputmode="numeric" required>
-                        </div>
+                        <div class="form-group"><label for="logDate">Date</label><input type="date" id="logDate" required></div>
+                        <div class="form-group"><label for="calories">Calories (kcal)</label><input type="number" id="calories" placeholder="2100" inputmode="numeric" required></div>
                     </div>
                     <div class="form-row-3">
-                        <div class="form-group">
-                            <label for="protein">Protein (g)</label>
-                            <input type="number" id="protein" placeholder="130" inputmode="numeric" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="carbs">Carbs (g)</label>
-                            <input type="number" id="carbs" placeholder="220" inputmode="numeric" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fat">Fat (g)</label>
-                            <input type="number" id="fat" placeholder="70" inputmode="numeric" required>
-                        </div>
+                        <div class="form-group"><label for="protein">Protein (g)</label><input type="number" id="protein" placeholder="130" inputmode="numeric" required></div>
+                        <div class="form-group"><label for="carbs">Carbs (g)</label><input type="number" id="carbs" placeholder="220" inputmode="numeric" required></div>
+                        <div class="form-group"><label for="fat">Fat (g)</label><input type="number" id="fat" placeholder="70" inputmode="numeric" required></div>
                     </div>
                     <div class="form-row-2">
-                        <div class="form-group">
-                            <label for="sodium">Sodium (mg)</label>
-                            <input type="number" id="sodium" placeholder="1800" inputmode="numeric" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="steps">Steps</label>
-                            <input type="number" id="steps" placeholder="10000" value="0" inputmode="numeric" required>
-                        </div>
+                        <div class="form-group"><label for="sodium">Sodium (mg)</label><input type="number" id="sodium" placeholder="1800" inputmode="numeric" required></div>
+                        <div class="form-group"><label for="steps">Steps</label><input type="number" id="steps" placeholder="10000" value="0" inputmode="numeric" required></div>
                     </div>
                     <div class="form-row-2" style="margin-top:4px;">
                         <button type="button" class="btn btn-glow" onclick="openGeminiModal()">&#x1F916; Gemini Fill</button>
@@ -563,22 +646,15 @@
     <!-- HISTORY -->
     <div id="section-history" class="section-anchor">
         <p class="section-label">History</p>
-        <div class="card" style="border-left:3px solid var(--primary);">
+        <div class="card tour-target-history" style="border-left:3px solid var(--primary);">
             <h2>&#x1F4DD; Nutrition &amp; Metabolic History</h2>
             <div class="table-scroll">
                 <div class="table-scroll-inner" id="diaryTableScroll">
                     <table id="diaryTable">
                         <thead><tr>
-                            <th>Date</th>
-                            <th>Calories</th>
-                            <th>Protein</th>
-                            <th>Carbs</th>
-                            <th>Fat</th>
-                            <th>Sodium</th>
-                            <th>Steps</th>
-                            <th>Burn</th>
-                            <th>Net Cal</th>
-                            <th style="width:70px;text-align:center;">Actions</th>
+                            <th>Date</th><th>Calories</th><th>Protein</th><th>Carbs</th>
+                            <th>Fat</th><th>Sodium</th><th>Steps</th><th>Burn</th>
+                            <th>Net Cal</th><th style="width:70px;text-align:center;">Act.</th>
                         </tr></thead>
                         <tbody></tbody>
                     </table>
@@ -588,10 +664,8 @@
                 <div class="pagination-info" id="diaryPagInfo"></div>
                 <div class="pagination-controls">
                     <select id="diaryRowsPer" onchange="diaryPage=1;renderDiaryTable()">
-                        <option value="10" selected>10</option>
-                        <option value="20">20</option>
-                        <option value="30">30</option>
-                        <option value="150">150</option>
+                        <option value="10" selected>10</option><option value="20">20</option>
+                        <option value="30">30</option><option value="150">150</option>
                     </select>
                     <button class="page-btn" id="diaryPrev" onclick="diaryPage--;renderDiaryTable()">&#x2039;</button>
                     <span id="diaryPageLabel" style="font-size:0.75rem;color:var(--text-muted);min-width:40px;text-align:center;"></span>
@@ -604,34 +678,30 @@
     <!-- CHARTS -->
     <div id="section-charts" class="section-anchor">
         <p class="section-label">Analytics</p>
-        <div class="card">
+        <div class="card tour-target-charts">
             <div class="chart-header">
                 <h2 style="margin-bottom:0;">&#x1F4C8; Trend Analytics</h2>
                 <div class="chart-controls">
                     <select id="timeRange" class="chart-select" onchange="updateCharts()">
-                        <option value="7">Weekly</option>
-                        <option value="30" selected>Monthly</option>
-                        <option value="365">Yearly</option>
+                        <option value="7">Weekly</option><option value="30" selected>Monthly</option><option value="365">Yearly</option>
                     </select>
                     <select id="chartPicker" class="chart-select" onchange="toggleChartLayout()">
-                        <option value="all">All Charts</option>
-                        <option value="bmi">BMI Only</option>
-                        <option value="calorie">Calories Only</option>
-                        <option value="steps">Steps Only</option>
+                        <option value="all">All Charts</option><option value="bmi">BMI Only</option>
+                        <option value="calorie">Calories Only</option><option value="steps">Steps Only</option>
                     </select>
                 </div>
             </div>
             <div class="charts-grid" id="chartsContainerGrid">
                 <div class="chart-inner-card" id="bmiChartWrapper">
-                    <h3 style="margin-top:0;">BMI Timeline</h3>
+                    <h3>&#x2696; BMI Timeline</h3>
                     <div class="chart-container"><canvas id="bmiChart"></canvas></div>
                 </div>
                 <div class="chart-inner-card" id="calorieChartWrapper">
-                    <h3 style="margin-top:0;">Caloric Intake</h3>
+                    <h3>&#x1F525; Caloric Intake vs Target</h3>
                     <div class="chart-container"><canvas id="calorieChart"></canvas></div>
                 </div>
                 <div class="chart-inner-card" id="stepsChartWrapper">
-                    <h3 style="margin-top:0;">Steps vs Calories Burned</h3>
+                    <h3>&#x1F463; Steps &amp; Calories Burned</h3>
                     <div class="chart-container"><canvas id="stepsChart"></canvas></div>
                 </div>
             </div>
@@ -641,52 +711,18 @@
     <!-- AI HELPER -->
     <div id="section-gemini" class="section-anchor">
         <p class="section-label">AI Helper</p>
-        <div class="card" style="background:linear-gradient(145deg,rgba(17,24,39,0.9),rgba(30,27,75,0.4));">
+        <div class="card tour-target-ai" style="background:linear-gradient(145deg,rgba(17,24,39,0.9),rgba(30,27,75,0.4));">
             <h2>&#x1F916; Gemini AI Nutrition Tracker</h2>
-
-            <p style="font-size:0.83rem;color:var(--text-muted);margin:0 0 14px;">
-                Use Google Gemini to automatically estimate your daily nutrition from photos or text descriptions of your meals — then import the result here in one tap.
-            </p>
-
-            <!-- HOW TO USE -->
+            <p style="font-size:0.83rem;color:var(--text-muted);margin:0 0 14px;">Use Google Gemini to automatically estimate daily nutrition from meal photos or descriptions, then import here in one tap.</p>
             <h3 style="margin-top:0;">&#x1F4CB; How to use</h3>
             <div class="how-to-steps">
-                <div class="how-step">
-                    <div class="how-step-num">1</div>
-                    <div class="how-step-text">
-                        <strong>Open Google Gemini</strong> — go to <strong>gemini.google.com</strong> in your browser or open the Gemini app. Make sure you are on the <strong>Gemini 1.5 Pro</strong> model or higher for best accuracy.
-                    </div>
-                </div>
-                <div class="how-step">
-                    <div class="how-step-num">2</div>
-                    <div class="how-step-text">
-                        <strong>Copy and send the prompt below</strong> — tap <em>Copy Prompt</em>, paste it into Gemini, and send it. This sets Gemini up to track your meals for the day.
-                    </div>
-                </div>
-                <div class="how-step">
-                    <div class="how-step-num">3</div>
-                    <div class="how-step-text">
-                        <strong>Log each meal as you eat</strong> — send a photo of your food, or describe it in text (e.g. "2 fried eggs, 1 cup white rice, grilled chicken 150g"). Gemini will keep a running tally.
-                    </div>
-                </div>
-                <div class="how-step">
-                    <div class="how-step-num">4</div>
-                    <div class="how-step-text">
-                        <strong>At end of day, type "Final Summary"</strong> — Gemini will reply with a JSON block containing your totals for calories, protein, carbs, fat and sodium.
-                    </div>
-                </div>
-                <div class="how-step">
-                    <div class="how-step-num">5</div>
-                    <div class="how-step-text">
-                        <strong>Tap &#x1F916; Gemini Fill above</strong> — paste the JSON into the popup. Your nutrition form will fill automatically. Review, then tap <em>Log Day</em>.
-                    </div>
-                </div>
+                <div class="how-step"><div class="how-step-num">1</div><div class="how-step-text"><strong>Open Google Gemini</strong> — go to <strong>gemini.google.com</strong> or the Gemini app. Use <strong>Gemini 1.5 Pro</strong> or higher for best accuracy.</div></div>
+                <div class="how-step"><div class="how-step-num">2</div><div class="how-step-text"><strong>Copy and send the prompt below</strong> — tap <em>Copy Prompt</em>, paste into Gemini, and send. This sets Gemini up to track your meals.</div></div>
+                <div class="how-step"><div class="how-step-num">3</div><div class="how-step-text"><strong>Log each meal as you eat</strong> — send a photo or describe it in text (e.g. "2 fried eggs, 1 cup white rice, 150g grilled chicken"). Gemini keeps a running tally.</div></div>
+                <div class="how-step"><div class="how-step-num">4</div><div class="how-step-text"><strong>At end of day, type "Final Summary"</strong> — Gemini replies with a JSON block of your totals.</div></div>
+                <div class="how-step"><div class="how-step-num">5</div><div class="how-step-text"><strong>Tap &#x1F916; Gemini Fill above</strong> — paste the JSON into the popup. Form fills automatically. Review, then tap <em>Log Day</em>.</div></div>
             </div>
-
-            <div class="tip-box">
-                &#x1F4A1; <strong>Pro tip — use AI Mode Search:</strong> In the Gemini app, you can enable <strong>Search</strong> integration so Gemini can look up nutritional data for branded foods and restaurant meals in real time, giving you much more accurate values than standard estimates.
-            </div>
-
+            <div class="tip-box">&#x1F4A1; <strong>Pro tip — use AI Mode Search:</strong> In the Gemini app, enable the <strong>Search</strong> toggle so Gemini can look up nutritional data for branded foods and restaurant meals in real time for much more accurate values.</div>
             <h3>&#x1F4CB; Prompt to copy</h3>
             <div class="prompt-box" id="promptText">I will send you photos or descriptions of my breakfast, lunch, dinner and snacks throughout the day. Track each meal as I send it, keeping a running total. When I say "Final Summary", give me the day's totals strictly inside a JSON code block using exactly this format so I can paste it into my nutrition tracker:
 
@@ -704,6 +740,28 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         </div>
     </div>
 
+    <!-- HEALTH FACTS CARD -->
+    <div id="section-facts" class="section-anchor">
+        <p class="section-label">Health Facts</p>
+        <div class="card facts-card">
+            <h2>&#x1F4A1; Did You Know?</h2>
+            <div class="fact-display" id="factDisplay">
+                <div class="fact-icon-big" id="factIcon"></div>
+                <span class="fact-category" id="factCategory"></span>
+                <p class="fact-text" id="factText"></p>
+                <span class="fact-source" id="factSource"></span>
+            </div>
+            <div class="facts-nav">
+                <button class="fact-btn" onclick="moveFact(-1)" aria-label="Previous">&#x2039;</button>
+                <div class="facts-dots" id="factsDots"></div>
+                <button class="fact-btn" onclick="moveFact(1)" aria-label="Next">&#x203A;</button>
+            </div>
+            <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin:0;">
+                Tap arrows or dots to browse &bull; Based on published health research
+            </p>
+        </div>
+    </div>
+
 </div><!-- /container -->
 
 <!-- BOTTOM NAV -->
@@ -714,6 +772,16 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     <a href="#section-charts"  onclick="setActiveNav(this)"><span class="nav-icon">&#x1F4C8;</span>Charts</a>
     <a href="#section-gemini"  onclick="setActiveNav(this)"><span class="nav-icon">&#x1F916;</span>AI</a>
 </nav>
+
+<!-- TOUR OVERLAYS -->
+<div id="tourSpotlight" class="tour-spotlight"></div>
+<div id="tourTooltip" class="tour-tooltip">
+    <div id="tourText" class="tour-text"></div>
+    <div class="tour-nav">
+        <button class="btn btn-sm btn-secondary" style="flex:1;" onclick="endTour()">Skip</button>
+        <button class="btn btn-sm btn-glow" style="flex:1;" id="tourNextBtn" onclick="nextTourStep()">Next</button>
+    </div>
+</div>
 
 <!-- GEMINI MODAL -->
 <div id="geminiModal" class="modal">
@@ -733,9 +801,17 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
 <div class="toast" id="toast"></div>
 
 <script>
-    // ── CONSTANTS & STATE ─────────────────────────
+    // ── TIMEZONE-SAFE TODAY ────────────────────────
+    function getLocalDateStr() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
     const KCAL_PER_STEP = 0.04;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateStr();
     let bmiChartInstance = null, calorieChartInstance = null, stepsChartInstance = null;
     let bmiPage = 1, diaryPage = 1;
 
@@ -743,6 +819,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
     document.getElementById('logDate').value = todayStr;
 
     document.addEventListener('DOMContentLoaded', () => {
+        applyTheme(localStorage.getItem('theme') || 'cyber', false);
         loadProfile();
         loadGoals();
         renderBMITable();
@@ -750,32 +827,264 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         updateTDEE();
         initCharts();
         toggleChartLayout();
+        initFacts();
     });
 
-    // ── TOAST ──────────────────────────────────────
+    // ── THEME ─────────────────────────────────────
+    const THEMES = ['cyber', 'forest', 'sunset'];
+    let currentThemeIndex = THEMES.indexOf(localStorage.getItem('theme') || 'cyber');
+    if (currentThemeIndex === -1) currentThemeIndex = 0;
+
+    function cycleTheme() {
+        currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+        setTheme(THEMES[currentThemeIndex]);
+    }
+
+    function setTheme(t) {
+        applyTheme(t, true);
+        localStorage.setItem('theme', t);
+    }
+
+    function applyTheme(t, animate) {
+        document.documentElement.setAttribute('data-theme', t);
+
+        const labels = [document.getElementById('themeLabelMobile'), document.getElementById('themeLabelDesktop')];
+        const swatches = [document.getElementById('themeSwatchMobile'), document.getElementById('themeSwatchDesktop')];
+        const metaColor = document.getElementById('metaThemeColor');
+
+        const labelText = t.charAt(0).toUpperCase() + t.slice(1);
+        let bgGradient = '';
+        let themeColorHex = '';
+
+        if (t === 'cyber')  { bgGradient = 'linear-gradient(135deg,#06b6d4,#d946ef)'; themeColorHex = '#06b6d4'; }
+        if (t === 'forest') { bgGradient = 'linear-gradient(135deg,#10b981,#f59e0b)'; themeColorHex = '#10b981'; }
+        if (t === 'sunset') { bgGradient = 'linear-gradient(135deg,#f97316,#ec4899)'; themeColorHex = '#f97316'; }
+
+        labels.forEach(l => { if(l) l.textContent = labelText; });
+        swatches.forEach(s => { if(s) s.style.background = bgGradient; });
+        if(metaColor) metaColor.setAttribute('content', themeColorHex);
+
+        if (animate && bmiChartInstance) {
+            setTimeout(() => { rebuildCharts(); }, 300);
+        }
+    }
+
+    // ── HEALTH FACTS CARD ──────────────────────────
+    const HEALTH_FACTS = [
+        { icon: '&#x2764;', text: 'Losing <strong>1 kg</strong> lowers systolic blood pressure by <strong>~1 mmHg</strong>', category: 'Heart Health', source: 'AHA Guidelines' },
+        { icon: '&#x1F6AA;', text: '<strong>10,000 steps/day</strong> reduces cardiovascular disease risk by up to <strong>30%</strong>', category: 'Activity', source: 'JAMA Cardiology' },
+        { icon: '&#x1F9EA;', text: 'Every <strong>2 kg lost</strong> can reduce fasting blood glucose by <strong>~0.1 mmol/L</strong>', category: 'Metabolism', source: 'Diabetes Care' },
+        { icon: '&#x1F4AA;', text: '<strong>500 mg less sodium/day</strong> can drop blood pressure by <strong>2-3 mmHg</strong>', category: 'Nutrition', source: 'Hypertension Journal' },
+        { icon: '&#x1F4A7;', text: 'Drinking <strong>500ml water</strong> before meals can reduce calorie intake by <strong>~13%</strong>', category: 'Hydration', source: 'Obesity Journal' },
+        { icon: '&#x1F3CB;', text: '<strong>150 mins of exercise/week</strong> reduces type 2 diabetes risk by <strong>30-50%</strong>', category: 'Exercise', source: 'WHO' },
+        { icon: '&#x1F34E;', text: '25g of dietary <strong>fibre per day</strong> lowers LDL cholesterol by <strong>5-10%</strong>', category: 'Nutrition', source: 'AJCN' },
+        { icon: '&#x1F634;', text: '<strong>7-9 hours of sleep</strong> is linked to 40% lower risk of obesity', category: 'Recovery', source: 'Sleep Medicine' },
+        { icon: '&#x1F966;', text: 'A <strong>5% body weight reduction</strong> can improve insulin sensitivity by <strong>up to 54%</strong>', category: 'Weight Loss', source: 'Cell Metabolism' },
+        { icon: '&#x1F9B4;', text: 'Every <strong>10 mins of walking</strong> after a meal can lower post-meal blood sugar by <strong>~22%</strong>', category: 'Digestion', source: 'Diabetologia' }
+    ];
+
+    let currentFactIdx = 0;
+    let factTimer = null;
+
+    function initFacts() {
+        const dotsContainer = document.getElementById('factsDots');
+        if (!dotsContainer) return;
+        
+        dotsContainer.innerHTML = HEALTH_FACTS.map((_, i) =>
+            `<button class="facts-dot ${i === 0 ? 'active' : ''}" onclick="setFact(${i})" aria-label="Fact ${i + 1}"></button>`
+        ).join('');
+        
+        renderFact(0);
+        startFactTimer();
+    }
+
+    function renderFact(idx) {
+        const f = HEALTH_FACTS[idx];
+        const display = document.getElementById('factDisplay');
+        
+        display.classList.remove('fact-transition-enter');
+        void display.offsetWidth; 
+        display.classList.add('fact-transition-enter');
+
+        document.getElementById('factIcon').innerHTML = f.icon;
+        document.getElementById('factText').innerHTML = f.text;
+        document.getElementById('factCategory').innerText = f.category || 'Tip';
+        document.getElementById('factSource').innerText = f.source ? `Source: ${f.source}` : '';
+
+        document.querySelectorAll('.facts-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i === idx);
+        });
+    }
+
+    function moveFact(direction) {
+        currentFactIdx = (currentFactIdx + direction + HEALTH_FACTS.length) % HEALTH_FACTS.length;
+        renderFact(currentFactIdx);
+        startFactTimer();
+    }
+
+    function setFact(idx) {
+        currentFactIdx = idx;
+        renderFact(idx);
+        startFactTimer();
+    }
+
+    function startFactTimer() {
+        clearInterval(factTimer);
+        factTimer = setInterval(() => { moveFact(1); }, 6500);
+    }
+
+    // ── TOUR GUIDE (Top-to-Bottom by Card) ────────
+    let currentTourStep = 0;
+    
+    const tourSteps = [
+        { 
+            targetClass: 'tour-target-manage', 
+            text: "<strong>Theme & Data Controls</strong><br>Tap the Theme button to change the app's look. Use the icons on the right to 💾 Export, 📥 Import, or 🗑️ Clear your data." 
+        },
+        { 
+            targetClass: 'tour-target-profile', 
+            text: "<strong>Profile & Goals</strong><br>Set your stats to calculate your daily calorie burn (TDEE). Adjust your macro targets below to track your progress." 
+        },
+        { 
+            targetClass: 'tour-target-bmi', 
+            text: "<strong>BMI Tracking</strong><br>Log your weight and height here. It automatically calculates your BMI and saves it to your history." 
+        },
+        { 
+            targetClass: 'tour-target-log', 
+            text: "<strong>Daily Intake</strong><br>Log your meals here. <b>Pro tip:</b> Tap the ⚡ <b>Gemini Fill</b> button to instantly fill this form using an AI summary!" 
+        },
+        { 
+            targetClass: 'tour-target-history', 
+            text: "<strong>History & Editing</strong><br>Review your past logs. If you need to make changes, tap the ✏️ icon on any row to edit, or ✖ to delete it." 
+        },
+        { 
+            targetClass: 'tour-target-charts', 
+            text: "<strong>Analytics</strong><br>Visualize your progress over time. You can filter by weekly, monthly, or yearly trends." 
+        },
+        { 
+            targetClass: 'tour-target-ai', 
+            text: "<strong>AI Helper Guide</strong><br>Follow these simple steps to start tracking your food effortlessly with Google Gemini." 
+        }
+    ];
+
+    function startTour() {
+        currentTourStep = 0;
+        document.getElementById('tourSpotlight').style.display = 'block';
+        document.getElementById('tourTooltip').style.display = 'block';
+        showTourStep();
+    }
+
+    function getVisibleTarget(className) {
+        const els = document.querySelectorAll('.' + className);
+        for (let el of els) {
+            if (el.offsetWidth > 0 && el.offsetHeight > 0 && window.getComputedStyle(el).display !== 'none') {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function showTourStep() {
+        const step = tourSteps[currentTourStep];
+        if (!step) return endTour();
+
+        const target = getVisibleTarget(step.targetClass);
+        const spot = document.getElementById('tourSpotlight');
+        const tt = document.getElementById('tourTooltip');
+        
+        document.getElementById('tourText').innerHTML = step.text;
+        document.getElementById('tourNextBtn').innerText = currentTourStep === tourSteps.length - 1 ? 'Finish' : 'Next';
+
+        if (target) {
+            // Scroll to place the target neatly at the top of the viewport
+            const headerOffset = window.innerWidth < 768 ? 90 : 100;
+            const elementAbsoluteTop = target.getBoundingClientRect().top + window.pageYOffset;
+            window.scrollTo({ top: Math.max(0, elementAbsoluteTop - headerOffset), behavior: 'smooth' });
+
+            // Wait for smooth scroll to finish
+            setTimeout(() => {
+                const rect = target.getBoundingClientRect();
+                const pad = 6;
+                
+                // Draw fixed spotlight over the element
+                spot.style.top = (rect.top - pad) + 'px';
+                spot.style.left = (rect.left - pad) + 'px';
+                spot.style.width = (rect.width + pad * 2) + 'px';
+                spot.style.height = (rect.height + pad * 2) + 'px';
+                spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.8), 0 0 20px var(--primary)';
+                spot.style.border = '2px dashed var(--primary)';
+
+                // HEMISPHERE RULE for Tooltip
+                // If element's center is in the top half of the screen, pin tooltip to the bottom.
+                // If element's center is in the bottom half, pin tooltip to the top.
+                const centerY = rect.top + (rect.height / 2);
+                
+                tt.style.left = '50%';
+                tt.style.transform = 'translateX(-50%)';
+
+                if (centerY > window.innerHeight / 2) {
+                    // Element is mostly at the bottom -> Tooltip goes to Top
+                    tt.style.bottom = 'auto';
+                    tt.style.top = '100px';
+                } else {
+                    // Element is mostly at the top -> Tooltip goes to Bottom
+                    tt.style.top = 'auto';
+                    tt.style.bottom = '90px'; // Leaves space for bottom nav
+                }
+            }, 400); 
+
+        } else {
+            // FAILSAFE: Hide spotlight hole, dim screen, center tooltip
+            spot.style.top = '50%'; spot.style.left = '50%';
+            spot.style.width = '0px'; spot.style.height = '0px';
+            spot.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.8)';
+            spot.style.border = 'none';
+
+            tt.style.top = 'auto';
+            tt.style.bottom = '90px';
+            tt.style.left = '50%';
+            tt.style.transform = 'translateX(-50%)';
+        }
+    }
+
+    function nextTourStep() {
+        currentTourStep++;
+        if (currentTourStep >= tourSteps.length) {
+            endTour();
+        } else {
+            showTourStep();
+        }
+    }
+
+    function endTour() {
+        document.getElementById('tourSpotlight').style.display = 'none';
+        document.getElementById('tourTooltip').style.display = 'none';
+    }
+
+    // ── TOAST ─────────────────────────────────────
     function showToast(msg, ms=2500) {
         const t = document.getElementById('toast');
         t.textContent = msg; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), ms);
     }
 
-    // ── NAV ────────────────────────────────────────
+    // ── NAV ───────────────────────────────────────
     function setActiveNav(el) {
         document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.remove('active'));
         el.classList.add('active');
     }
 
-    // ── MODAL ──────────────────────────────────────
-    function openGeminiModal()  { document.getElementById('geminiPasteBox').value = ''; document.getElementById('geminiModal').classList.add('open'); }
+    // ── MODAL ─────────────────────────────────────
+    function openGeminiModal()  { document.getElementById('geminiPasteBox').value=''; document.getElementById('geminiModal').classList.add('open'); }
     function closeGeminiModal() { document.getElementById('geminiModal').classList.remove('open'); }
-    document.getElementById('geminiModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeGeminiModal(); });
+    document.getElementById('geminiModal').addEventListener('click', e => { if (e.target===e.currentTarget) closeGeminiModal(); });
 
     function processGeminiResponse() {
         const raw = document.getElementById('geminiPasteBox').value;
         try {
             const clean = raw.replace(/```json/g,'').replace(/```/g,'').trim();
             const data  = JSON.parse(clean);
-            if ([data.calories,data.protein,data.carbs,data.fat,data.sodium].some(v=>v===undefined)) { showToast('Missing fields — check JSON format.'); return; }
+            if ([data.calories,data.protein,data.carbs,data.fat,data.sodium].some(v=>v===undefined)) { showToast('Missing fields — check JSON.'); return; }
             document.getElementById('calories').value = Math.round(data.calories);
             document.getElementById('protein').value  = Math.round(data.protein);
             document.getElementById('carbs').value    = Math.round(data.carbs);
@@ -786,7 +1095,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         } catch { showToast('Invalid JSON — copy the full { } block.'); }
     }
 
-    // ── PROFILE & TDEE ─────────────────────────────
+    // ── PROFILE & TDEE ────────────────────────────
     function saveProfile() {
         localStorage.setItem('prof_age',      document.getElementById('profileAge').value      || '');
         localStorage.setItem('prof_gender',   document.getElementById('profileGender').value   || 'male');
@@ -798,55 +1107,44 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('profileGender').value   = localStorage.getItem('prof_gender')   || 'male';
         document.getElementById('profileActivity').value = localStorage.getItem('prof_activity') || '1.55';
     }
-
     function calcTDEE(weight, height, age, gender, activity) {
-        // Mifflin-St Jeor BMR
-        let bmr;
-        if (gender === 'male')   bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-        else                     bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
-        return { bmr: Math.round(bmr), tdee: Math.round(bmr * activity) };
+        const bmr = gender==='male'
+            ? (10*weight)+(6.25*height)-(5*age)+5
+            : (10*weight)+(6.25*height)-(5*age)-161;
+        return { bmr: Math.round(bmr), tdee: Math.round(bmr*activity) };
     }
-
     function updateTDEE() {
         const age      = parseInt(document.getElementById('profileAge').value);
         const gender   = document.getElementById('profileGender').value;
         const activity = parseFloat(document.getElementById('profileActivity').value);
-
-        // get latest weight & height from BMI history
-        const bmiHist = JSON.parse(localStorage.getItem('bmiHistory')||'[]');
-        if (!bmiHist.length || !age || !gender) {
-            document.getElementById('tdeeBanner').style.display = 'none';
-            document.getElementById('tdeePlaceholder').style.display = 'block';
+        const bmiHist  = JSON.parse(localStorage.getItem('bmiHistory')||'[]');
+        if (!bmiHist.length || !age) {
+            document.getElementById('tdeeBanner').style.display='none';
+            document.getElementById('tdeePlaceholder').style.display='block';
             return;
         }
         const latest = bmiHist.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
         const { bmr, tdee } = calcTDEE(latest.weight, latest.height, age, gender, activity);
-
-        // get today's diary
         const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
-        const todayLog = diary.find(d => d.date === todayStr);
-        let netEl = document.getElementById('tdeeNet');
+        const todayLog = diary.find(d=>d.date===todayStr);
+        const netEl = document.getElementById('tdeeNet');
         if (todayLog) {
-            const burn = Math.round(todayLog.steps * KCAL_PER_STEP);
+            const burn = Math.round(todayLog.steps*KCAL_PER_STEP);
             const net  = todayLog.calories - burn - tdee;
-            netEl.textContent = (net > 0 ? '+' : '') + net + ' kcal';
-            netEl.className = 'tdee-val ' + (net > 200 ? 'red' : net < -200 ? 'green' : 'cyan');
-        } else {
-            netEl.textContent = 'No log';
-            netEl.className = 'tdee-val';
-        }
-
-        document.getElementById('tdeeBMR').textContent  = bmr  + ' kcal';
-        document.getElementById('tdeeTDEE').textContent = tdee + ' kcal';
-        document.getElementById('tdeeBanner').style.display = 'grid';
-        document.getElementById('tdeePlaceholder').style.display = 'none';
+            netEl.textContent = (net>0?'+':'')+net+' kcal';
+            netEl.className = 'tdee-val '+(net>200?'red':net<-200?'green':'cyan');
+        } else { netEl.textContent='No log'; netEl.className='tdee-val'; }
+        document.getElementById('tdeeBMR').textContent  = bmr+' kcal';
+        document.getElementById('tdeeTDEE').textContent = tdee+' kcal';
+        document.getElementById('tdeeBanner').style.display='grid';
+        document.getElementById('tdeePlaceholder').style.display='none';
     }
 
-    // ── GOALS ──────────────────────────────────────
+    // ── GOALS ─────────────────────────────────────
     function saveGoals() {
-        localStorage.setItem('tgt_cal',  document.getElementById('targetCalories').value || 2000);
-        localStorage.setItem('tgt_prot', document.getElementById('targetProtein').value  || 120);
-        localStorage.setItem('tgt_sod',  document.getElementById('targetSodium').value   || 2300);
+        localStorage.setItem('tgt_cal',  document.getElementById('targetCalories').value||2000);
+        localStorage.setItem('tgt_prot', document.getElementById('targetProtein').value ||120);
+        localStorage.setItem('tgt_sod',  document.getElementById('targetSodium').value  ||2300);
         renderDiaryTable();
     }
     function loadGoals() {
@@ -854,295 +1152,273 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         document.getElementById('targetProtein').value  = localStorage.getItem('tgt_prot') || 120;
         document.getElementById('targetSodium').value   = localStorage.getItem('tgt_sod')  || 2300;
     }
-
     function clearAllData() {
         if (confirm('WARNING: This will permanently delete all your data.\n\nContinue?')) {
             localStorage.clear();
             loadProfile(); loadGoals(); renderBMITable(); renderDiaryTable(); updateCharts();
-            document.getElementById('bmiResult').style.display = 'none';
-            document.getElementById('tdeeBanner').style.display = 'none';
-            document.getElementById('tdeePlaceholder').style.display = 'block';
+            document.getElementById('bmiResult').style.display='none';
+            document.getElementById('tdeeBanner').style.display='none';
+            document.getElementById('tdeePlaceholder').style.display='block';
             showToast('All data cleared.');
         }
     }
-
     function copyPromptText() {
-        const el  = document.getElementById('promptText');
-        const tag = el.querySelector('.copy-tag');
-        const txt = el.innerText.replace('Copy Prompt','').trim();
-        navigator.clipboard.writeText(txt).then(() => {
-            tag.innerText = 'Copied!';
-            tag.style.background = '#06b6d4'; tag.style.color = '#fff';
-            setTimeout(() => { tag.innerText = 'Copy Prompt'; tag.style.background='#1f2937'; tag.style.color='var(--text)'; }, 2000);
+        const el=document.getElementById('promptText'), tag=el.querySelector('.copy-tag');
+        const txt=el.innerText.replace('Copy Prompt','').trim();
+        navigator.clipboard.writeText(txt).then(()=>{
+            tag.innerText='Copied!'; tag.style.background=getComputedStyle(document.documentElement).getPropertyValue('--primary').trim()||'#06b6d4'; tag.style.color='#fff';
+            setTimeout(()=>{ tag.innerText='Copy Prompt'; tag.style.background=''; tag.style.color=''; },2000);
         });
     }
 
-    // ── WEEKLY AVERAGES HELPER ─────────────────────
-    // Groups sorted (asc) rows into chunks of 7, averages each chunk
-    function buildWeeklyAverages(rows, fields) {
-        const asc = [...rows].sort((a,b) => new Date(a.date)-new Date(b.date));
-        const chunks = [];
-        for (let i = 0; i < asc.length; i += 7) chunks.push(asc.slice(i, i+7));
-        return chunks.map(chunk => {
-            const avg = { _isAvg: true, _count: chunk.length,
-                _from: chunk[0].date, _to: chunk[chunk.length-1].date };
-            fields.forEach(f => {
-                avg[f] = parseFloat((chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
-            });
-            return avg;
-        });
+    // ── WEEKLY AVG HELPER ─────────────────────────
+    function chunkInto7(arr) {
+        const asc=[...arr].sort((a,b)=>new Date(a.date)-new Date(b.date));
+        const chunks=[];
+        for(let i=0;i<asc.length;i+=7) chunks.push(asc.slice(i,i+7));
+        return chunks;
     }
 
-    // ── BMI FORM ───────────────────────────────────
+    // ── BMI ───────────────────────────────────────
     document.getElementById('bmiForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const date   = document.getElementById('bmiDate').value;
-        const weight = parseFloat(document.getElementById('weight').value);
-        const height = parseFloat(document.getElementById('height').value);
-        const bmi    = (weight / ((height/100)**2)).toFixed(1);
-        let status='', cls='';
-        if      (bmi<18.5) { status='Underweight'; cls='warning'; }
-        else if (bmi<25)   { status='Normal';       cls='normal';  }
-        else if (bmi<30)   { status='Overweight';   cls='warning'; }
-        else               { status='Obese';         cls='danger';  }
-        const rd = document.getElementById('bmiResult');
+        const date=document.getElementById('bmiDate').value;
+        const weight=parseFloat(document.getElementById('weight').value);
+        const height=parseFloat(document.getElementById('height').value);
+        const bmi=(weight/((height/100)**2)).toFixed(1);
+        let status='',cls='';
+        if(bmi<18.5){status='Underweight';cls='warning';}
+        else if(bmi<25){status='Normal';cls='normal';}
+        else if(bmi<30){status='Overweight';cls='warning';}
+        else{status='Obese';cls='danger';}
+        const rd=document.getElementById('bmiResult');
         rd.className=`result ${cls}`; rd.innerText=`BMI for ${date}: ${bmi} (${status})`; rd.style.display='block';
-        let hist = JSON.parse(localStorage.getItem('bmiHistory')||'[]').filter(i=>i.date!==date);
+        let hist=JSON.parse(localStorage.getItem('bmiHistory')||'[]').filter(i=>i.date!==date);
         hist.push({date,weight,height,bmi:parseFloat(bmi)});
         hist.sort((a,b)=>new Date(b.date)-new Date(a.date));
         localStorage.setItem('bmiHistory',JSON.stringify(hist));
         document.getElementById('bmiSubmitBtn').innerText='Calculate & Save';
         document.getElementById('bmiDate').value=todayStr;
-        document.getElementById('weight').value='';
-        document.getElementById('height').value='';
+        document.getElementById('weight').value=''; document.getElementById('height').value='';
         renderBMITable(); updateCharts(); updateTDEE();
         showToast(`BMI ${bmi} saved for ${date}`);
     });
 
     function renderBMITable() {
-        const all    = JSON.parse(localStorage.getItem('bmiHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
-        const perPage= parseInt(document.getElementById('bmiRowsPer').value) || 10;
-        const total  = all.length;
-        const pages  = Math.max(1, Math.ceil(total / perPage));
-        bmiPage = Math.min(bmiPage, pages);
-        const slice  = all.slice((bmiPage-1)*perPage, bmiPage*perPage);
-
-        // weekly averages for this slice (asc for grouping, same visual window)
-        const avgRows = buildWeeklyAverages(slice, ['weight','height','bmi']);
-
-        // Build combined rows: interleave avg after every 7 data rows
-        // We render slice desc, inject avg rows every 7
-        const rows = [];
-        const sliceAsc = [...slice].sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const chunks = [];
-        for (let i=0;i<sliceAsc.length;i+=7) chunks.push(sliceAsc.slice(i,i+7));
-
-        // reverse chunks so newest weeks appear first
-        chunks.reverse();
-        chunks.forEach(chunk => {
-            const chunkDesc = [...chunk].sort((a,b)=>new Date(b.date)-new Date(a.date));
-            chunkDesc.forEach(r => rows.push({type:'data', r}));
-            // avg for this chunk
-            const fields = ['weight','height','bmi'];
-            const avg = {};
-            fields.forEach(f => avg[f] = (chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
-            rows.push({type:'avg', from: chunk[0].date, to: chunk[chunk.length-1].date, count: chunk.length, avg});
+        const all=JSON.parse(localStorage.getItem('bmiHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const perPage=parseInt(document.getElementById('bmiRowsPer').value)||10;
+        const total=all.length, pages=Math.max(1,Math.ceil(total/perPage));
+        bmiPage=Math.min(bmiPage,pages);
+        const slice=all.slice((bmiPage-1)*perPage,bmiPage*perPage);
+        const chunks=chunkInto7(slice); chunks.reverse();
+        const rows=[];
+        chunks.forEach(chunk=>{
+            [...chunk].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(r=>rows.push({type:'data',r}));
+            const avg={};
+            ['weight','height','bmi'].forEach(f=>avg[f]=(chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
+            rows.push({type:'avg',from:chunk[0].date,to:chunk[chunk.length-1].date,count:chunk.length,avg});
         });
-
-        const tbody = document.querySelector('#bmiTable tbody');
-        tbody.innerHTML = rows.length ? rows.map(item => {
-            if (item.type === 'avg') return `<tr class="avg-row">
-                <td>&#x2205; ${item.count}-day avg<br><span style="font-size:0.65rem;font-weight:400;color:#67e8f9;">${item.from} &#8594; ${item.to}</span></td>
-                <td>${item.avg.weight} kg</td>
-                <td>${item.avg.height} cm</td>
-                <td>${item.avg.bmi}</td>
-                <td></td></tr>`;
-            const r = item.r;
-            return `<tr>
-                <td>${r.date}</td>
-                <td style="font-weight:600;">${r.weight} kg</td>
-                <td>${r.height} cm</td>
+        document.querySelector('#bmiTable tbody').innerHTML = rows.length ? rows.map(item=>{
+            if(item.type==='avg') return `<tr class="avg-row">
+                <td>&#x2205; ${item.count}-day avg<br><span style="font-size:0.65rem;font-weight:400;opacity:0.7">${item.from} &#8594; ${item.to}</span></td>
+                <td>${item.avg.weight} kg</td><td>${item.avg.height} cm</td><td>${item.avg.bmi}</td><td></td></tr>`;
+            const r=item.r;
+            return `<tr><td>${r.date}</td><td style="font-weight:600;">${r.weight} kg</td><td>${r.height} cm</td>
                 <td><span class="status-badge status-good">${r.bmi}</span></td>
                 <td class="action-cell">
-                    <button class="btn-row-action btn-row-edit"   onclick="editBmiEntry('${r.date}')"   title="Edit">&#x270F;</button>
-                    <button class="btn-row-action btn-row-delete" onclick="deleteBmiEntry('${r.date}')" title="Delete">&#x2715;</button>
+                    <button class="btn-row-action btn-row-edit" onclick="editBmiEntry('${r.date}')">&#x270F;</button>
+                    <button class="btn-row-action btn-row-delete" onclick="deleteBmiEntry('${r.date}')">&#x2715;</button>
                 </td></tr>`;
         }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:18px;">No entries yet</td></tr>';
-
-        // pagination info
-        const from = total ? (bmiPage-1)*perPage+1 : 0;
-        const to   = Math.min(bmiPage*perPage, total);
-        document.getElementById('bmiPagInfo').textContent    = total ? `${from}–${to} of ${total}` : '0 entries';
-        document.getElementById('bmiPageLabel').textContent  = `${bmiPage}/${pages}`;
-        document.getElementById('bmiPrev').disabled = bmiPage <= 1;
-        document.getElementById('bmiNext').disabled = bmiPage >= pages;
-
-        // dynamic table height
-        const count = Math.min(slice.length + Math.ceil(slice.length/7), 15);
-        document.getElementById('bmiTableScroll').style.maxHeight = Math.max(200, count * 44) + 'px';
+        const from=total?(bmiPage-1)*perPage+1:0, to=Math.min(bmiPage*perPage,total);
+        document.getElementById('bmiPagInfo').textContent=total?`${from}–${to} of ${total}`:'0 entries';
+        document.getElementById('bmiPageLabel').textContent=`${bmiPage}/${pages}`;
+        document.getElementById('bmiPrev').disabled=bmiPage<=1;
+        document.getElementById('bmiNext').disabled=bmiPage>=pages;
+        document.getElementById('bmiTableScroll').style.maxHeight=Math.max(200,Math.min(slice.length+Math.ceil(slice.length/7),15)*44)+'px';
     }
 
     function editBmiEntry(date) {
-        const e = JSON.parse(localStorage.getItem('bmiHistory')||'[]').find(i=>i.date===date);
-        if (e) {
-            document.getElementById('bmiDate').value=e.date;
-            document.getElementById('weight').value=e.weight;
-            document.getElementById('height').value=e.height;
-            document.getElementById('bmiSubmitBtn').innerText='Update Entry';
-            document.getElementById('bmiForm').scrollIntoView({behavior:'smooth'});
-        }
+        const e=JSON.parse(localStorage.getItem('bmiHistory')||'[]').find(i=>i.date===date);
+        if(e){document.getElementById('bmiDate').value=e.date;document.getElementById('weight').value=e.weight;document.getElementById('height').value=e.height;document.getElementById('bmiSubmitBtn').innerText='Update Entry';document.getElementById('bmiForm').scrollIntoView({behavior:'smooth'});}
     }
     function deleteBmiEntry(date) {
-        if (confirm(`Delete BMI entry for ${date}?`)) {
-            let h = JSON.parse(localStorage.getItem('bmiHistory')||'[]').filter(i=>i.date!==date);
-            localStorage.setItem('bmiHistory',JSON.stringify(h));
-            renderBMITable(); updateCharts(); updateTDEE(); showToast('Entry deleted.');
-            const rd=document.getElementById('bmiResult'); if(rd.innerText.includes(date)) rd.style.display='none';
+        if(confirm(`Delete BMI entry for ${date}?`)){
+            localStorage.setItem('bmiHistory',JSON.stringify(JSON.parse(localStorage.getItem('bmiHistory')||'[]').filter(i=>i.date!==date)));
+            renderBMITable();updateCharts();updateTDEE();showToast('Entry deleted.');
+            const rd=document.getElementById('bmiResult');if(rd.innerText.includes(date))rd.style.display='none';
         }
     }
 
-    // ── DIARY FORM ─────────────────────────────────
+    // ── DIARY ─────────────────────────────────────
     document.getElementById('diaryForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const date = document.getElementById('logDate').value;
-        const entry = {
-            date,
-            calories: parseInt(document.getElementById('calories').value),
-            protein:  parseInt(document.getElementById('protein').value),
-            carbs:    parseInt(document.getElementById('carbs').value),
-            fat:      parseInt(document.getElementById('fat').value),
-            sodium:   parseInt(document.getElementById('sodium').value),
-            steps:    parseInt(document.getElementById('steps').value)||0
-        };
-        let diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date);
-        diary.push(entry); diary.sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const date=document.getElementById('logDate').value;
+        const entry={date,calories:parseInt(document.getElementById('calories').value),protein:parseInt(document.getElementById('protein').value),carbs:parseInt(document.getElementById('carbs').value),fat:parseInt(document.getElementById('fat').value),sodium:parseInt(document.getElementById('sodium').value),steps:parseInt(document.getElementById('steps').value)||0};
+        let diary=JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date);
+        diary.push(entry);diary.sort((a,b)=>new Date(b.date)-new Date(a.date));
         localStorage.setItem('diaryHistory',JSON.stringify(diary));
         document.getElementById('diarySubmitBtn').innerText='Log Day';
         ['calories','protein','carbs','fat','sodium'].forEach(id=>document.getElementById(id).value='');
-        document.getElementById('logDate').value=todayStr;
-        document.getElementById('steps').value='0';
-        renderDiaryTable(); updateCharts(); updateTDEE();
-        showToast(`Day logged for ${date}`);
+        document.getElementById('logDate').value=todayStr;document.getElementById('steps').value='0';
+        renderDiaryTable();updateCharts();updateTDEE();showToast(`Day logged for ${date}`);
     });
 
     function renderDiaryTable() {
-        const all    = JSON.parse(localStorage.getItem('diaryHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
-        const lCal   = parseInt(document.getElementById('targetCalories').value)||2000;
-        const fProt  = parseInt(document.getElementById('targetProtein').value) ||120;
-        const lSod   = parseInt(document.getElementById('targetSodium').value)  ||2300;
-        const perPage= parseInt(document.getElementById('diaryRowsPer').value)  ||10;
-        const total  = all.length;
-        const pages  = Math.max(1, Math.ceil(total / perPage));
-        diaryPage    = Math.min(diaryPage, pages);
-        const slice  = all.slice((diaryPage-1)*perPage, diaryPage*perPage);
-
-        // group into weekly chunks (asc), reverse for display
-        const sliceAsc = [...slice].sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const chunks = [];
-        for (let i=0;i<sliceAsc.length;i+=7) chunks.push(sliceAsc.slice(i,i+7));
-        chunks.reverse();
-
-        const rows = [];
-        chunks.forEach(chunk => {
-            const chunkDesc = [...chunk].sort((a,b)=>new Date(b.date)-new Date(a.date));
-            chunkDesc.forEach(r => rows.push({type:'data',r}));
-            const fields = ['calories','protein','carbs','fat','sodium','steps'];
-            const avg = {};
-            fields.forEach(f => avg[f] = (chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
-            avg.burn = (avg.steps * KCAL_PER_STEP).toFixed(0);
-            avg.net  = (parseFloat(avg.calories) - parseFloat(avg.burn)).toFixed(0);
-            rows.push({type:'avg', from:chunk[0].date, to:chunk[chunk.length-1].date, count:chunk.length, avg});
+        const all=JSON.parse(localStorage.getItem('diaryHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
+        const lCal=parseInt(document.getElementById('targetCalories').value)||2000;
+        const fProt=parseInt(document.getElementById('targetProtein').value)||120;
+        const lSod=parseInt(document.getElementById('targetSodium').value)||2300;
+        const perPage=parseInt(document.getElementById('diaryRowsPer').value)||10;
+        const total=all.length,pages=Math.max(1,Math.ceil(total/perPage));
+        diaryPage=Math.min(diaryPage,pages);
+        const slice=all.slice((diaryPage-1)*perPage,diaryPage*perPage);
+        const chunks=chunkInto7(slice);chunks.reverse();
+        const rows=[];
+        chunks.forEach(chunk=>{
+            [...chunk].sort((a,b)=>new Date(b.date)-new Date(a.date)).forEach(r=>rows.push({type:'data',r}));
+            const avg={};
+            ['calories','protein','carbs','fat','sodium','steps'].forEach(f=>avg[f]=(chunk.reduce((s,r)=>s+(parseFloat(r[f])||0),0)/chunk.length).toFixed(1));
+            avg.burn=(avg.steps*KCAL_PER_STEP).toFixed(0);
+            avg.net=(parseFloat(avg.calories)-parseFloat(avg.burn)).toFixed(0);
+            rows.push({type:'avg',from:chunk[0].date,to:chunk[chunk.length-1].date,count:chunk.length,avg});
         });
-
-        const tbody = document.querySelector('#diaryTable tbody');
-        tbody.innerHTML = rows.length ? rows.map(item => {
-            if (item.type === 'avg') return `<tr class="avg-row">
-                <td>&#x2205; ${item.count}-day avg<br><span style="font-size:0.65rem;font-weight:400;color:#67e8f9;">${item.from} &#8594; ${item.to}</span></td>
-                <td>${item.avg.calories} kcal</td>
-                <td>${item.avg.protein} g</td>
-                <td>${item.avg.carbs} g</td>
-                <td>${item.avg.fat} g</td>
-                <td>${item.avg.sodium} mg</td>
+        document.querySelector('#diaryTable tbody').innerHTML=rows.length?rows.map(item=>{
+            if(item.type==='avg') return `<tr class="avg-row">
+                <td>&#x2205; ${item.count}-day avg<br><span style="font-size:0.65rem;font-weight:400;opacity:0.7">${item.from} &#8594; ${item.to}</span></td>
+                <td>${item.avg.calories} kcal</td><td>${item.avg.protein} g</td><td>${item.avg.carbs} g</td>
+                <td>${item.avg.fat} g</td><td>${item.avg.sodium} mg</td>
                 <td>${parseFloat(item.avg.steps).toLocaleString()}</td>
-                <td>-${item.avg.burn} kcal</td>
-                <td>${item.avg.net > 0 ? '+' : ''}${item.avg.net}</td>
-                <td></td></tr>`;
-            const r    = item.r;
-            const burn = Math.round(r.steps * KCAL_PER_STEP);
-            const net  = r.calories - burn;
+                <td>-${item.avg.burn}</td><td>${item.avg.net>0?'+':''}${item.avg.net}</td><td></td></tr>`;
+            const r=item.r,burn=Math.round(r.steps*KCAL_PER_STEP),net=r.calories-burn;
             return `<tr>
                 <td>${r.date}</td>
-                <td><div style="font-weight:700;color:#fff;">${r.calories} kcal</div><span class="status-badge ${r.calories>lCal?'status-over':'status-good'}">${r.calories>lCal?'OVER':'OK'}</span></td>
+                <td><div style="font-weight:700;">${r.calories} kcal</div><span class="status-badge ${r.calories>lCal?'status-over':'status-good'}">${r.calories>lCal?'OVER':'OK'}</span></td>
                 <td><div style="font-weight:600;">${r.protein} g</div><span class="status-badge ${r.protein>=fProt?'status-good':'status-under'}">${r.protein>=fProt?'MET':'LOW'}</span></td>
-                <td>${r.carbs} g</td>
-                <td>${r.fat} g</td>
+                <td>${r.carbs} g</td><td>${r.fat} g</td>
                 <td><div>${r.sodium} mg</div><span class="status-badge ${r.sodium>lSod?'status-over':'status-good'}">${r.sodium>lSod?'HIGH':'OK'}</span></td>
-                <td style="font-weight:600;color:#e9d5ff;">${r.steps.toLocaleString()}</td>
-                <td style="color:#22d3ee;font-weight:700;">-${burn} kcal</td>
-                <td style="font-weight:700;color:${net>200?'#f87171':net<-200?'#34d399':'#fff'};">${net>0?'+':''}${net}</td>
+                <td style="font-weight:600;color:var(--accent);">${r.steps.toLocaleString()}</td>
+                <td style="color:var(--primary);font-weight:700;">-${burn}</td>
+                <td style="font-weight:700;color:${net>200?'#f87171':net<-200?'#34d399':'var(--text)'};">${net>0?'+':''}${net}</td>
                 <td class="action-cell">
-                    <button class="btn-row-action btn-row-edit"   onclick="editNutritionEntry('${r.date}')"   title="Edit">&#x270F;</button>
-                    <button class="btn-row-action btn-row-delete" onclick="deleteNutritionEntry('${r.date}')" title="Delete">&#x2715;</button>
+                    <button class="btn-row-action btn-row-edit" onclick="editNutritionEntry('${r.date}')">&#x270F;</button>
+                    <button class="btn-row-action btn-row-delete" onclick="deleteNutritionEntry('${r.date}')">&#x2715;</button>
                 </td></tr>`;
-        }).join('') : '<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:20px;">No logs yet</td></tr>';
-
-        const from = total ? (diaryPage-1)*perPage+1 : 0;
-        const to   = Math.min(diaryPage*perPage, total);
-        document.getElementById('diaryPagInfo').textContent   = total ? `${from}–${to} of ${total}` : '0 entries';
-        document.getElementById('diaryPageLabel').textContent = `${diaryPage}/${pages}`;
-        document.getElementById('diaryPrev').disabled = diaryPage <= 1;
-        document.getElementById('diaryNext').disabled = diaryPage >= pages;
-
-        const count = Math.min(slice.length + Math.ceil(slice.length/7), 18);
-        document.getElementById('diaryTableScroll').style.maxHeight = Math.max(200, count * 46) + 'px';
+        }).join(''):'<tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:20px;">No logs yet</td></tr>';
+        const from=total?(diaryPage-1)*perPage+1:0,to=Math.min(diaryPage*perPage,total);
+        document.getElementById('diaryPagInfo').textContent=total?`${from}–${to} of ${total}`:'0 entries';
+        document.getElementById('diaryPageLabel').textContent=`${diaryPage}/${pages}`;
+        document.getElementById('diaryPrev').disabled=diaryPage<=1;
+        document.getElementById('diaryNext').disabled=diaryPage>=pages;
+        document.getElementById('diaryTableScroll').style.maxHeight=Math.max(200,Math.min(slice.length+Math.ceil(slice.length/7),18)*46)+'px';
     }
 
     function editNutritionEntry(date) {
-        const e = JSON.parse(localStorage.getItem('diaryHistory')||'[]').find(i=>i.date===date);
-        if (e) {
-            document.getElementById('logDate').value   = e.date;
-            document.getElementById('calories').value  = e.calories;
-            document.getElementById('protein').value   = e.protein;
-            document.getElementById('carbs').value     = e.carbs;
-            document.getElementById('fat').value       = e.fat;
-            document.getElementById('sodium').value    = e.sodium;
-            document.getElementById('steps').value     = e.steps||0;
-            document.getElementById('diarySubmitBtn').innerText='Update Log';
-            document.getElementById('diaryForm').scrollIntoView({behavior:'smooth'});
-        }
+        const e=JSON.parse(localStorage.getItem('diaryHistory')||'[]').find(i=>i.date===date);
+        if(e){document.getElementById('logDate').value=e.date;document.getElementById('calories').value=e.calories;document.getElementById('protein').value=e.protein;document.getElementById('carbs').value=e.carbs;document.getElementById('fat').value=e.fat;document.getElementById('sodium').value=e.sodium;document.getElementById('steps').value=e.steps||0;document.getElementById('diarySubmitBtn').innerText='Update Log';document.getElementById('diaryForm').scrollIntoView({behavior:'smooth'});}
     }
     function deleteNutritionEntry(date) {
-        if (confirm(`Delete log for ${date}?`)) {
-            let d = JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date);
-            localStorage.setItem('diaryHistory',JSON.stringify(d));
-            renderDiaryTable(); updateCharts(); updateTDEE(); showToast('Log deleted.');
+        if(confirm(`Delete log for ${date}?`)){
+            localStorage.setItem('diaryHistory',JSON.stringify(JSON.parse(localStorage.getItem('diaryHistory')||'[]').filter(i=>i.date!==date)));
+            renderDiaryTable();updateCharts();updateTDEE();showToast('Log deleted.');
         }
     }
 
-    // ── CHARTS ─────────────────────────────────────
+    // ── CHARTS ────────────────────────────────────
+    function getThemeColors() {
+        const s = getComputedStyle(document.documentElement);
+        return {
+            c1: s.getPropertyValue('--chart-1').trim(),
+            c2: s.getPropertyValue('--chart-2').trim(),
+            c3: s.getPropertyValue('--chart-3').trim(),
+            c4: s.getPropertyValue('--chart-4').trim(),
+            text: s.getPropertyValue('--text-muted').trim(),
+            grid: 'rgba(255,255,255,0.05)',
+        };
+    }
+
+    function makeGradient(ctx, color) {
+        const g = ctx.createLinearGradient(0, 0, 0, 220);
+        g.addColorStop(0, color + 'aa');
+        g.addColorStop(1, color + '00');
+        return g;
+    }
+
     function toggleChartLayout() {
         const v=document.getElementById('chartPicker').value;
         const grid=document.getElementById('chartsContainerGrid');
         const wB=document.getElementById('bmiChartWrapper'),wC=document.getElementById('calorieChartWrapper'),wS=document.getElementById('stepsChartWrapper');
         [wB,wC,wS].forEach(w=>w.style.display='none');
-        wS.style.gridColumn='span 1'; grid.style.gridTemplateColumns='1fr';
-        if(v==='all'){
-            [wB,wC,wS].forEach(w=>w.style.display='block');
-            if(window.innerWidth>=768){grid.style.gridTemplateColumns='1fr 1fr';wS.style.gridColumn='span 2';}
-        } else if(v==='bmi'){wB.style.display='block';}
-        else if(v==='calorie'){wC.style.display='block';}
-        else if(v==='steps'){wS.style.display='block';}
+        wS.style.gridColumn='span 1';grid.style.gridTemplateColumns='1fr';
+        if(v==='all'){[wB,wC,wS].forEach(w=>w.style.display='block');if(window.innerWidth>=768){grid.style.gridTemplateColumns='1fr 1fr';wS.style.gridColumn='span 2';}}
+        else if(v==='bmi')    wB.style.display='block';
+        else if(v==='calorie')wC.style.display='block';
+        else if(v==='steps')  wS.style.display='block';
         [bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.resize());
     }
 
+    function rebuildCharts() {
+        [bmiChartInstance,calorieChartInstance,stepsChartInstance].forEach(c=>c&&c.destroy());
+        bmiChartInstance=calorieChartInstance=stepsChartInstance=null;
+        initCharts();
+    }
+
     function initCharts() {
-        const opts={responsive:true,maintainAspectRatio:false,scales:{
-            x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9ca3af',font:{size:9}}},
-            y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9ca3af',font:{size:9}}}
-        }};
-        bmiChartInstance=new Chart(document.getElementById('bmiChart'),{type:'line',data:{labels:['No Data'],datasets:[{data:[0],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,0.1)',tension:0.3,fill:true}]},options:{...opts,plugins:{legend:{display:false}}}});
-        calorieChartInstance=new Chart(document.getElementById('calorieChart'),{type:'bar',data:{labels:['No Data'],datasets:[{data:[0],backgroundColor:'#d946ef',borderRadius:5,label:'Intake (kcal)'}]},options:{...opts,plugins:{legend:{display:false}}}});
-        stepsChartInstance=new Chart(document.getElementById('stepsChart'),{type:'bar',data:{labels:['No Data'],datasets:[{data:[0],backgroundColor:'#a855f7',borderRadius:5,label:'Steps',yAxisID:'y'},{data:[0],backgroundColor:'#06b6d4',label:'Est. Burn (kcal)',yAxisID:'y1',type:'line',borderColor:'#06b6d4',fill:false,tension:0.2}]},options:{...opts,plugins:{legend:{labels:{color:'#fff',font:{weight:'600',size:10}}}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9ca3af',font:{size:9}}},y:{type:'linear',position:'left',grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#9ca3af',font:{size:9}},title:{display:true,text:'Steps',color:'#c084fc',font:{size:9}}},y1:{type:'linear',position:'right',grid:{drawOnChartArea:false},ticks:{color:'#9ca3af',font:{size:9}},title:{display:true,text:'kcal',color:'#22d3ee',font:{size:9}}}}}});
+        const tc = getThemeColors();
+        const baseScale = (side='left') => ({
+            type:'linear', position:side,
+            grid:{color:tc.grid},
+            ticks:{color:tc.text, font:{size:9}},
+            border:{color:tc.grid}
+        });
+        const xScale = { grid:{color:tc.grid}, ticks:{color:tc.text,font:{size:9},maxRotation:45}, border:{color:tc.grid} };
+        const baseOpts = { responsive:true, maintainAspectRatio:false, animation:{ duration:600, easing:'easeInOutQuart' }, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(15,23,42,0.9)', titleColor:'#fff', bodyColor:tc.text, borderColor:tc.c1, borderWidth:1, padding:10, cornerRadius:10 } } };
+
+        // BMI — smooth area line
+        const bmiCtx = document.getElementById('bmiChart').getContext('2d');
+        bmiChartInstance = new Chart(bmiCtx, {
+            type:'line',
+            data:{ labels:['No Data'], datasets:[{
+                data:[0], label:'BMI',
+                borderColor: tc.c1,
+                backgroundColor: makeGradient(bmiCtx, tc.c1),
+                borderWidth:2.5, tension:0.4, fill:true,
+                pointBackgroundColor: tc.c1,
+                pointBorderColor:'#fff', pointBorderWidth:1.5,
+                pointRadius:4, pointHoverRadius:7,
+            }]},
+            options:{ ...baseOpts, scales:{ x:xScale, y:{...baseScale(), title:{display:true,text:'BMI',color:tc.c1,font:{size:9}}} },
+                plugins:{ ...baseOpts.plugins, annotation:{} } }
+        });
+
+        // CALORIE — gradient bars
+        const calCtx = document.getElementById('calorieChart').getContext('2d');
+        calorieChartInstance = new Chart(calCtx, {
+            type:'bar',
+            data:{ labels:['No Data'], datasets:[
+                { data:[0], label:'Intake (kcal)', backgroundColor: tc.c2+'cc', borderColor: tc.c2, borderWidth:1, borderRadius:6, borderSkipped:false },
+                { data:[0], label:'Target', type:'line', borderColor: tc.c4+'88', borderWidth:1.5, borderDash:[4,4], pointRadius:0, fill:false }
+            ]},
+            options:{ ...baseOpts, plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:'#fff', font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } }, scales:{ x:xScale, y:{...baseScale(), title:{display:true,text:'kcal',color:tc.c2,font:{size:9}}} } }
+        });
+
+        // STEPS — bars + burn line
+        const stpCtx = document.getElementById('stepsChart').getContext('2d');
+        stepsChartInstance = new Chart(stpCtx, {
+            type:'bar',
+            data:{ labels:['No Data'], datasets:[
+                { data:[0], label:'Steps', backgroundColor: tc.c3+'bb', borderColor:tc.c3, borderWidth:1, borderRadius:5, borderSkipped:false, yAxisID:'y' },
+                { data:[0], label:'Burn (kcal)', type:'line', borderColor:tc.c1, backgroundColor: makeGradient(stpCtx, tc.c1), borderWidth:2, tension:0.4, fill:true, pointBackgroundColor:tc.c1, pointBorderColor:'#fff', pointBorderWidth:1.5, pointRadius:3, pointHoverRadius:6, yAxisID:'y1' }
+            ]},
+            options:{ ...baseOpts,
+                plugins:{ ...baseOpts.plugins, legend:{ display:true, labels:{ color:'#fff', font:{size:10,weight:'600'}, boxWidth:12, padding:12 } } },
+                scales:{ x:xScale,
+                    y:{ ...baseScale('left'), title:{ display:true, text:'Steps', color:tc.c3, font:{size:9} } },
+                    y1:{ ...baseScale('right'), grid:{drawOnChartArea:false}, title:{ display:true, text:'kcal burned', color:tc.c1, font:{size:9} } }
+                }
+            }
+        });
+
         updateCharts();
     }
 
@@ -1152,83 +1428,82 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         const cutOff=new Date(); cutOff.setDate(cutOff.getDate()-days);
         const bmiH =JSON.parse(localStorage.getItem('bmiHistory')  ||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
         const diarH=JSON.parse(localStorage.getItem('diaryHistory')||'[]').sort((a,b)=>new Date(a.date)-new Date(b.date));
-        const fB=bmiH.filter(i=>new Date(i.date)>=cutOff), fD=diarH.filter(i=>new Date(i.date)>=cutOff);
-        if(fB.length){bmiChartInstance.data.labels=fB.map(i=>i.date);bmiChartInstance.data.datasets[0].data=fB.map(i=>i.bmi);}
-        else{bmiChartInstance.data.labels=['Waiting'];bmiChartInstance.data.datasets[0].data=[0];}
-        bmiChartInstance.update();
+        const fB=bmiH.filter(i=>new Date(i.date)>=cutOff);
+        const fD=diarH.filter(i=>new Date(i.date)>=cutOff);
+        const tCal = parseInt(document.getElementById('targetCalories').value)||2000;
+
+        if(fB.length){ bmiChartInstance.data.labels=fB.map(i=>i.date); bmiChartInstance.data.datasets[0].data=fB.map(i=>i.bmi); }
+        else{ bmiChartInstance.data.labels=['Waiting']; bmiChartInstance.data.datasets[0].data=[0]; }
+        bmiChartInstance.update('active');
+
         if(fD.length){
-            calorieChartInstance.data.labels=fD.map(i=>i.date);calorieChartInstance.data.datasets[0].data=fD.map(i=>i.calories);
-            stepsChartInstance.data.labels=fD.map(i=>i.date);stepsChartInstance.data.datasets[0].data=fD.map(i=>i.steps||0);stepsChartInstance.data.datasets[1].data=fD.map(i=>((i.steps||0)*KCAL_PER_STEP).toFixed(0));
+            calorieChartInstance.data.labels=fD.map(i=>i.date);
+            calorieChartInstance.data.datasets[0].data=fD.map(i=>i.calories);
+            calorieChartInstance.data.datasets[1].data=fD.map(()=>tCal);
+            stepsChartInstance.data.labels=fD.map(i=>i.date);
+            stepsChartInstance.data.datasets[0].data=fD.map(i=>i.steps||0);
+            stepsChartInstance.data.datasets[1].data=fD.map(i=>((i.steps||0)*KCAL_PER_STEP).toFixed(0));
         } else {
-            calorieChartInstance.data.labels=['Waiting'];calorieChartInstance.data.datasets[0].data=[0];
-            stepsChartInstance.data.labels=['Waiting'];stepsChartInstance.data.datasets[0].data=[0];stepsChartInstance.data.datasets[1].data=[0];
+            calorieChartInstance.data.labels=['Waiting']; calorieChartInstance.data.datasets[0].data=[0]; calorieChartInstance.data.datasets[1].data=[0];
+            stepsChartInstance.data.labels=['Waiting']; stepsChartInstance.data.datasets[0].data=[0]; stepsChartInstance.data.datasets[1].data=[0];
         }
-        calorieChartInstance.update(); stepsChartInstance.update();
+        calorieChartInstance.update('active');
+        stepsChartInstance.update('active');
     }
 
-    // ── CSV EXPORT ─────────────────────────────────
+    // ── CSV EXPORT ────────────────────────────────
     function exportData() {
-        const bmi   = JSON.parse(localStorage.getItem('bmiHistory')  ||'[]');
-        const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
-        const age      = localStorage.getItem('prof_age')      || '';
-        const gender   = localStorage.getItem('prof_gender')   || '';
-        const activity = localStorage.getItem('prof_activity') || '';
-        let csv = "data:text/csv;charset=utf-8,TYPE,DATE,WEIGHT_KG,HEIGHT_CM,BMI_VAL,CALORIES_KCAL,PROTEIN_G,CARBS_G,FAT_G,SODIUM_MG,STEPS_COUNT,PROFILE_AGE,PROFILE_GENDER,PROFILE_ACTIVITY\n";
-        // profile row
-        csv += `PROFILE,,,,,,,,,,,"${age}","${gender}","${activity}"\n`;
-        bmi.forEach(r   => { csv += `BMI,${r.date},${r.weight},${r.height},${r.bmi},,,,,,,,,\n`; });
-        diary.forEach(r => { csv += `NUTRITION,${r.date},,,,${r.calories},${r.protein},${r.carbs},${r.fat},${r.sodium},${r.steps||0},,,\n`; });
-        const link = document.createElement('a');
-        link.setAttribute('href', encodeURI(csv));
-        link.setAttribute('download', `health_backup_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        const bmi=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
+        const diary=JSON.parse(localStorage.getItem('diaryHistory')||'[]');
+        const age=localStorage.getItem('prof_age')||'', gender=localStorage.getItem('prof_gender')||'', activity=localStorage.getItem('prof_activity')||'';
+        let csv="data:text/csv;charset=utf-8,TYPE,DATE,WEIGHT_KG,HEIGHT_CM,BMI_VAL,CALORIES_KCAL,PROTEIN_G,CARBS_G,FAT_G,SODIUM_MG,STEPS_COUNT,PROFILE_AGE,PROFILE_GENDER,PROFILE_ACTIVITY\n";
+        csv+=`PROFILE,,,,,,,,,,,"${age}","${gender}","${activity}"\n`;
+        bmi.forEach(r=>csv+=`BMI,${r.date},${r.weight},${r.height},${r.bmi},,,,,,,,,\n`);
+        diary.forEach(r=>csv+=`NUTRITION,${r.date},,,,${r.calories},${r.protein},${r.carbs},${r.fat},${r.sodium},${r.steps||0},,,\n`);
+        const link=document.createElement('a');
+        link.setAttribute('href',encodeURI(csv));
+        link.setAttribute('download',`health_backup_${getLocalDateStr()}.csv`);
+        document.body.appendChild(link);link.click();document.body.removeChild(link);
         showToast('CSV exported.');
     }
 
-    // ── CSV IMPORT ─────────────────────────────────
+    // ── CSV IMPORT ────────────────────────────────
     function importData(input) {
-        const file = input.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split(/\r?\n/);
-            if (lines.length < 2) { showToast('Invalid file format.'); return; }
-            const newBmi=[], newDiary=[];
-            let profileAge='', profileGender='', profileActivity='';
-            for (let i=1; i<lines.length; i++) {
-                const line=lines[i].trim(); if(!line) continue;
-                const cols=line.split(','), type=cols[0], date=cols[1];
-                if (type==='PROFILE') {
-                    profileAge      = (cols[11]||'').replace(/"/g,'');
-                    profileGender   = (cols[12]||'').replace(/"/g,'');
-                    profileActivity = (cols[13]||'').replace(/"/g,'');
-                } else if (type==='BMI' && date) {
-                    newBmi.push({date,weight:parseFloat(cols[2])||0,height:parseFloat(cols[3])||0,bmi:parseFloat(cols[4])||0});
-                } else if (type==='NUTRITION' && date) {
-                    newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0});
-                }
+        const file=input.files[0]; if(!file)return;
+        const reader=new FileReader();
+        reader.onload=function(e){
+            const lines=e.target.result.split(/\r?\n/);
+            if(lines.length<2){showToast('Invalid file format.');return;}
+            const newBmi=[],newDiary=[];
+            let pAge='',pGender='',pActivity='';
+            for(let i=1;i<lines.length;i++){
+                const line=lines[i].trim(); if(!line)continue;
+                const cols=line.split(','),type=cols[0],date=cols[1];
+                if(type==='PROFILE'){pAge=(cols[11]||'').replace(/"/g,'');pGender=(cols[12]||'').replace(/"/g,'');pActivity=(cols[13]||'').replace(/"/g,'');}
+                else if(type==='BMI'&&date)       newBmi.push({date,weight:parseFloat(cols[2])||0,height:parseFloat(cols[3])||0,bmi:parseFloat(cols[4])||0});
+                else if(type==='NUTRITION'&&date) newDiary.push({date,calories:parseInt(cols[5])||0,protein:parseInt(cols[6])||0,carbs:parseInt(cols[7])||0,fat:parseInt(cols[8])||0,sodium:parseInt(cols[9])||0,steps:parseInt(cols[10])||0});
             }
-            if (newBmi.length>0||newDiary.length>0) {
-                if (confirm(`Found ${newBmi.length} BMI and ${newDiary.length} nutrition entries. Restore?`)) {
-                    let cB=JSON.parse(localStorage.getItem('bmiHistory')  ||'[]');
+            if(newBmi.length>0||newDiary.length>0){
+                if(confirm(`Found ${newBmi.length} BMI and ${newDiary.length} nutrition entries. Restore?`)){
+                    let cB=JSON.parse(localStorage.getItem('bmiHistory')||'[]');
                     let cD=JSON.parse(localStorage.getItem('diaryHistory')||'[]');
                     newBmi.forEach(n=>{cB=cB.filter(i=>i.date!==n.date);cB.push(n);});
                     newDiary.forEach(n=>{cD=cD.filter(i=>i.date!==n.date);cD.push(n);});
-                    localStorage.setItem('bmiHistory',  JSON.stringify(cB));
+                    localStorage.setItem('bmiHistory',JSON.stringify(cB));
                     localStorage.setItem('diaryHistory',JSON.stringify(cD));
-                    // restore profile if present
-                    if (profileAge)      { localStorage.setItem('prof_age',profileAge);      document.getElementById('profileAge').value=profileAge; }
-                    if (profileGender)   { localStorage.setItem('prof_gender',profileGender); document.getElementById('profileGender').value=profileGender; }
-                    if (profileActivity) { localStorage.setItem('prof_activity',profileActivity); document.getElementById('profileActivity').value=profileActivity; }
-                    renderBMITable(); renderDiaryTable(); updateCharts(); updateTDEE();
+                    if(pAge){localStorage.setItem('prof_age',pAge);document.getElementById('profileAge').value=pAge;}
+                    if(pGender){localStorage.setItem('prof_gender',pGender);document.getElementById('profileGender').value=pGender;}
+                    if(pActivity){localStorage.setItem('prof_activity',pActivity);document.getElementById('profileActivity').value=pActivity;}
+                    renderBMITable();renderDiaryTable();updateCharts();updateTDEE();
                     showToast(`Imported ${newBmi.length+newDiary.length} entries.`);
                 }
-            } else { showToast('No compatible entries found.'); }
+            } else showToast('No compatible entries found.');
         };
-        reader.readAsText(file); input.value='';
+        reader.readAsText(file);input.value='';
     }
 
     window.addEventListener('resize',()=>{
-        if(window.innerWidth>=768&&document.getElementById('chartPicker').value==='all') toggleChartLayout();
+        if(window.innerWidth>=768&&document.getElementById('chartPicker').value==='all')toggleChartLayout();
     });
 </script>
 </body>
