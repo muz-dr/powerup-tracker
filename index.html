@@ -148,69 +148,117 @@
         input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* FORM ROW 1 (missing from original) */
+        /* FORM ROW 1 */
         .form-row-1 { display: flex; flex-direction: column; gap: 6px; margin-bottom: 11px; }
 
-        /* ── VIRTUAL COMPANION ──────────────────── */
-        #virtualPet {
-            position: fixed; z-index: 9999;
-            display: none; user-select: none;
-            cursor: pointer;
+        /* ── TABBY - Pixel Cat Companion ────────── */
+        #tabby-wrap {
+            position: fixed;
+            z-index: 9999;
+            display: none;
+            width: 56px;
+            bottom: 90px; right: 18px;
+            cursor: grab;
             -webkit-tap-highlight-color: transparent;
-            /* start bottom-right corner */
-            bottom: 80px; right: 16px;
-            transition: bottom 2.2s cubic-bezier(.45,1.6,.55,1),
-                        right  2.2s cubic-bezier(.45,1.6,.55,1),
-                        left   2.2s cubic-bezier(.45,1.6,.55,1),
-                        transform 0.25s ease;
+            touch-action: none;
+            user-select: none;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
         }
-        #petBody {
-            font-size: 2.2rem; line-height: 1;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        #tabby-wrap:active { cursor: grabbing; }
+
+        /* SVG cat parts */
+        #tabby-svg {
+            width: 56px;
             display: block;
+            overflow: visible;
+            transition: transform 0.15s;
         }
-        /* speech bubble */
-        #petBubble {
-            position: absolute;
-            bottom: calc(100% + 6px);
-            right: 0;
+
+        /* Mochi stretch — applied to the body group during drag */
+        #tabby-body-group {
+            transition: transform 0.18s cubic-bezier(.34,1.56,.64,1);
+        }
+        #tabby-head-group {
+            transition: transform 0.28s cubic-bezier(.34,1.56,.64,1);
+        }
+
+        /* Animations */
+        @keyframes tabbyWalk {
+            0%,100% { transform: translateY(0px); }
+            50%      { transform: translateY(-3px); }
+        }
+        @keyframes tabbyIdleBob {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-2px); }
+        }
+        @keyframes tabbySleepBreathe {
+            0%,100% { transform: scaleY(1); }
+            50%      { transform: scaleY(1.06); }
+        }
+        @keyframes tabbyBounceIn {
+            0%   { transform: scaleY(0.6) scaleX(1.3); }
+            50%  { transform: scaleY(1.15) scaleX(0.9); }
+            75%  { transform: scaleY(0.95) scaleX(1.03); }
+            100% { transform: scaleY(1) scaleX(1); }
+        }
+        @keyframes tabbyScared {
+            0%,100% { transform: rotate(0deg); }
+            20%      { transform: rotate(-6deg); }
+            60%      { transform: rotate(6deg); }
+        }
+        @keyframes starFloat {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-22px) scale(0.4); }
+        }
+        @keyframes heartFloat {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-24px) scale(0.5); }
+        }
+
+        #tabby-wrap.walking     #tabby-svg { animation: tabbyWalk 0.32s ease-in-out infinite; }
+        #tabby-wrap.idle        #tabby-svg { animation: tabbyIdleBob 2.4s ease-in-out infinite; }
+        #tabby-wrap.sleep       #tabby-body-group { animation: tabbySleepBreathe 2.2s ease-in-out infinite; transform-origin: 32px 60px; }
+        #tabby-wrap.scared      #tabby-svg { animation: tabbyScared 0.15s ease-in-out 3; }
+        #tabby-wrap.bounce      #tabby-body-group { animation: tabbyBounceIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+
+        /* Speech bubble */
+        #tabbyBubble {
+            position: fixed;
             background: var(--card-solid);
-            border: 1px solid var(--border);
+            border: 1.5px solid var(--border);
             border-radius: 12px 12px 2px 12px;
             padding: 7px 11px;
             font-size: 0.72rem;
             font-weight: 600;
             color: var(--text);
-            white-space: nowrap;
-            max-width: 200px;
-            white-space: normal;
+            max-width: 190px;
             text-align: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-            opacity: 0;
-            transform: scale(0.8) translateY(6px);
-            transform-origin: bottom right;
-            transition: opacity 0.2s, transform 0.25s;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
             pointer-events: none;
-            z-index: 10000;
+            z-index: 10001;
+            line-height: 1.45;
+            white-space: normal;
+            opacity: 0;
+            transform: scale(0.85);
+            transform-origin: bottom right;
+            transition: opacity 0.2s, transform 0.2s;
+            /* Added min-height to prevent jumping during typing animation */
+            min-height: 32px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        #petBubble.show {
-            opacity: 1; transform: scale(1) translateY(0);
+        #tabbyBubble.show { opacity: 1; transform: scale(1); display: flex; }
+
+        /* Emotion particles */
+        .tabby-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10002;
+            font-size: 1rem;
+            animation: heartFloat 0.9s ease-out forwards;
         }
-        /* walk animation */
-        @keyframes petWalk {
-            0%,100% { transform: rotate(0deg) scaleX(var(--pet-dir,1)); }
-            25%      { transform: rotate(-4deg) scaleX(var(--pet-dir,1)); }
-            75%      { transform: rotate(4deg) scaleX(var(--pet-dir,1)); }
-        }
-        .pet-walking #petBody {
-            animation: petWalk 0.5s ease-in-out infinite;
-        }
-        /* bounce when tapped */
-        @keyframes petBounce {
-            0%,100% { transform: scaleX(var(--pet-dir,1)) translateY(0); }
-            40%      { transform: scaleX(var(--pet-dir,1)) translateY(-12px); }
-        }
-        .pet-bounce #petBody { animation: petBounce 0.4s ease; }
+        .tabby-particle.star { animation: starFloat 0.8s ease-out forwards; }
 
         /* ── BOTTOM NAV ─────────────────────────── */
         .bottom-nav {
@@ -332,7 +380,6 @@
         .guide-btn { border-style: dashed; }
 
         /* FORM GRIDS */
-        .form-row-1 { margin-bottom: 11px; }
         .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-width: 0; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; min-width: 0; }
         @media (max-width: 360px) { .form-row-3 { grid-template-columns: 1fr 1fr; } }
@@ -577,10 +624,74 @@
 </head>
 <body>
 
-<!-- VIRTUAL COMPANION (Comnyang) -->
-<div id="virtualPet" onclick="petTapped()">
-    <div id="petBubble"></div>
-    <span id="petBody">🐱</span>
+<!-- TABBY - Blocky Black Cat Companion -->
+<div id="tabbyBubble"></div>
+<div id="tabby-wrap" class="idle">
+  <svg id="tabby-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+    
+    <!-- ── BODY GROUP (mochi stretch applied here) ── -->
+    <g id="tabby-body-group" style="transform-origin: 32px 60px;">
+        <!-- Tail -->
+        <path d="M 44 38 h 8 v 16 h -8 v -6 h -2 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        
+        <!-- Body Base -->
+        <path d="M 20 30 h 24 v 24 h -24 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        
+        <!-- Paws -->
+        <path d="M 22 54 h 8 v 6 h -8 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        <path d="M 34 54 h 8 v 6 h -8 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        
+        <!-- Overlap blockers to merge the black fill cleanly -->
+        <rect x="21" y="31" width="22" height="24" fill="black" stroke="none" />
+        <rect x="43" y="44" width="2" height="6" fill="black" stroke="none" />
+        <rect x="23" y="53" width="6" height="3" fill="black" stroke="none" />
+        <rect x="35" y="53" width="6" height="3" fill="black" stroke="none" />
+    </g>
+
+    <!-- ── HEAD GROUP (lags slightly on mochi drag) ── -->
+    <g id="tabby-head-group" style="transform-origin: 32px 38px;">
+        <!-- Ears -->
+        <path d="M 16 12 h 8 v 8 h 16 v -8 h 8 v 12 h -32 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        
+        <!-- Head Base -->
+        <path d="M 12 20 h 40 v 18 h -40 z" fill="black" stroke="white" stroke-width="2" stroke-linejoin="miter" />
+        
+        <!-- Masking the lines between ears and head -->
+        <rect x="17" y="21" width="30" height="2" fill="black" stroke="none" />
+        
+        <!-- Whiskers -->
+        <rect x="4" y="26" width="8" height="2" fill="white" />
+        <rect x="4" y="32" width="8" height="2" fill="white" />
+        <rect x="52" y="26" width="8" height="2" fill="white" />
+        <rect x="52" y="32" width="8" height="2" fill="white" />
+
+        <!-- Normal Eyes -->
+        <g id="tabby-normal-eyes">
+            <rect id="tabby-eye-l" x="22" y="24" width="6" height="6" fill="black" stroke="white" stroke-width="2" />
+            <rect id="tabby-eye-r" x="36" y="24" width="6" height="6" fill="black" stroke="white" stroke-width="2" />
+        </g>
+
+        <!-- Sleep Eyes -->
+        <g id="tabby-sleep-eyes" style="display:none;">
+            <rect x="22" y="26" width="6" height="2" fill="white" stroke="none" />
+            <rect x="36" y="26" width="6" height="2" fill="white" stroke="none" />
+        </g>
+
+        <!-- Happy Eyes -->
+        <g id="tabby-happy-eyes" style="display:none;">
+            <path d="M 22 28 L 25 24 L 28 28" fill="none" stroke="white" stroke-width="2" />
+            <path d="M 36 28 L 39 24 L 42 28" fill="none" stroke="white" stroke-width="2" />
+        </g>
+
+        <!-- Scared Eyes -->
+        <g id="tabby-scared-eyes" style="display:none;">
+            <rect x="20" y="22" width="10" height="10" fill="white" stroke="none" />
+            <rect x="34" y="22" width="10" height="10" fill="white" stroke="none" />
+            <rect x="24" y="26" width="2" height="2" fill="black" />
+            <rect x="38" y="26" width="2" height="2" fill="black" />
+        </g>
+    </g>
+  </svg>
 </div>
 
 <!-- MOBILE TOP BAR -->
@@ -660,7 +771,6 @@
 
             <h2 style="margin-top:16px;">&#x1F3AF; Targets &amp; ETA</h2>
             
-            <!-- FIXED 2x2 Grid Layout -->
             <div class="goals-grid">
                 <div class="form-group">
                     <label for="targetCalories">Calorie Ceiling (kcal)</label>
@@ -680,7 +790,6 @@
                 </div>
             </div>
             
-            <!-- ETA Banner -->
             <div class="eta-banner" id="etaDisplay">
                 Set target weight &amp; log BMI for ETA.
             </div>
@@ -1011,7 +1120,8 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         initFacts();
         updateStreak(); 
 
-        // Init Pet
+        // Init Tabby
+        tabbyBindEvents();
         const petEnabled = localStorage.getItem('pet_enabled') === 'true';
         if (document.getElementById('petToggle')) document.getElementById('petToggle').checked = petEnabled;
         if (petEnabled) togglePet();
@@ -1057,161 +1167,452 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         }
     }
 
-    // ── VIRTUAL COMPANION (Comnyang) ──────────────
-    const PET_EMOJIS = { idle:'🐱', walk:'🐈', happy:'😸', love:'😻', sleep:'😴', surprised:'🙀', cool:'😎' };
-    const PET_MESSAGES = {
-        greet:    ['Meow! 👋 How are you today?', 'Purrr~ Ready to track? 🐾', 'Hi there! Let\'s hit those goals! 💪', 'Nyaa~ You\'re back! 😸'],
-        logged:   ['Great job logging! 🎉', 'Purr-fect tracking! 🐾', 'Consistency is key! Keep it up! ✨', 'Meow! One step at a time! 🏃'],
-        goodcal:  ['Calories on point! 😎 Purrfect!', 'You\'re crushing the calorie goal! 🎯', 'Meow! Nice discipline today! 🐱'],
-        overcal:  ['A little over today 😅 Tomorrow we try again!', 'Meow... maybe less nasi lemak next time? 😂', 'Over budget! But one day won\'t ruin progress! 💪'],
-        goodstep: ['10k steps! You\'re on fire! 🔥', 'Amazing step count! Your legs are strong! 💪', 'Meow! That\'s a lot of walking! 🐾'],
-        lowstep:  ['Try a short walk later? 🚶 Even 10 mins helps!', 'Meow~ Move a little more today! 🐾', 'A little stroll goes a long way! 🌿'],
-        streak:   ['Streak is alive! Don\'t break the chain! 🔥', 'Meow! Consistent logging = real results! 📈', 'Your streak is impressive! Keep going! ⭐'],
-        idle:     ['*yawns* 😴 Still here if you need me!', 'Purrr... 💤', '*twitches tail*', 'Meow?  Logging time? 🐾', '*bats at your screen* Log something! 😸'],
-        tap:      ['Nyaa~! 😸', 'Stop that! I\'m trying to nap! 😂', 'Purrrr~ 💜', 'You found me! 🐾', 'Meow! Feed me data! 📊', '*purrs loudly* 😻'],
-        bmi:      ['BMI logged! Your journey is tracked! 📊', 'Meow! Weight data saved! 🏋️', 'Consistency in logging = better insights! ✨'],
-        water:    ['Hydrated cat approves! 💧😸', 'Meow! Water is life! 💧', 'Great hydration! Keep it up! 🌊'],
+    // ── TABBY - Custom SVG pixel black cat companion ─────────
+
+    const TABBY_MESSAGES = {
+        greet:    ['Meow! Ready to track? 🐾', 'Purrr~ I missed you! 😸', 'Hi! Let\'s hit those goals! 💪', 'Nyaa~ You\'re back! 🐱'],
+        logged:   ['Purr-fect! 🎉', 'Great logging! 🐾', 'Consistency = results! ✨', 'One step closer! 🏃'],
+        goodcal:  ['Calories on point! 😎', 'Crushing the goal! 🎯', 'Nice discipline! 🐱'],
+        overcal:  ['A bit over today 😅', 'Maybe less nasi lemak? 😂', 'Tomorrow we try again! 💪'],
+        goodstep: ['10k steps! On fire! 🔥', 'Amazing walking! 💪', 'So much walking! 🐾'],
+        lowstep:  ['Short walk? 🚶 Even 10 mins!', 'Move a little! 🐾', 'A stroll helps! 🌿'],
+        streak:   ['Streak alive! 🔥', 'Consistent = results! 📈', 'Impressive! ⭐'],
+        idle:     ['*yawns* 😴', 'Purrr... 💤', 'Meoww😽', 'Log something? 🐾', '*bats screen* 😸'],
+        tap:      ['Nyaa~! 😸', 'I was napping! 😂', 'Purrrr~ 💜', 'Found me! 🐾', 'Feed me data! 📊'],
+        drag:     ['Whee~! 😸', 'Stretchy! 🫧', 'Like mochi! 😹', 'Wheee! 🐱'],
+        drop:     ['*boing* 😸', 'Oof! 😾', 'I\'m ok! 🐱', '*licks paw* 😸'],
+        wall:     ['*scratch scratch* 🐾', 'This wall is mine!', '*scritch*'],
+        bmi:      ['BMI saved! 📊', 'Weight logged! 🏋️', 'Tracking! ✨'],
+        water:    ['Hydrated! 💧😸', 'Water = life! 💧', 'Stay hydrated! 🌊'],
     };
 
-    let petTimer = null, petIdleTimer = null, petBubbleTimer = null;
-    let petDir = 1; // 1 = right, -1 = left
-    let isPetMoving = false;
+    // ── STATE ──────────────────────────────────────
+    let tabbyX = window.innerWidth  - 80;
+    let tabbyY = window.innerHeight - 180;
+    let tabbyFaceDir = -1;      // 1 = right, -1 = left
+    let tabbyState = 'idle';    // idle | walking | sleep | scratch | drag
+    let tabbyBubbleTimer = null;
+    let tabbyTypingTimer = null;
+    let tabbyIdleTimer   = null;
+    let tabbyWanderTimer = null;
+    let tabbyIdleTicks   = 0;
+    let tabbyEnabled     = false;
 
+    // Drag state
+    let tabbyDragging    = false;
+    let tabbyDragOX      = 0, tabbyDragOY = 0;
+    let tabbyVelX        = 0, tabbyVelY = 0;
+    let tabbyLastX       = 0, tabbyLastY = 0;
+    let tabbyDragStart   = 0;
+
+    const wrap = () => document.getElementById('tabby-wrap');
+    const bodyG = () => document.getElementById('tabby-body-group');
+    const headG = () => document.getElementById('tabby-head-group');
+
+    // ── TOGGLE ────────────────────────────────────
     function togglePet() {
         const isEnabled = document.getElementById('petToggle').checked;
         localStorage.setItem('pet_enabled', isEnabled);
-        const pet = document.getElementById('virtualPet');
+        tabbyEnabled = isEnabled;
+        const el = wrap();
         if (isEnabled) {
-            pet.style.display = 'block';
-            // reset to corner
-            pet.style.bottom = '80px'; pet.style.right = '16px'; pet.style.left = 'auto'; pet.style.top = 'auto';
-            setTimeout(() => petSayRandom('greet'), 1000);
-            petIdleTimer = setInterval(petIdleBehavior, 8000);
-            petTimer     = setInterval(petWander, 12000);
+            tabbyX = window.innerWidth  - 80;
+            tabbyY = window.innerHeight - 180;
+            el.style.display = 'block';
+            tabbySetPos(tabbyX, tabbyY);
+            tabbySetState('idle');
+            tabbyResetStretch();
+            setTimeout(() => tabbySayRandom('greet'), 900);
+            tabbyIdleTimer   = setInterval(tabbyIdleTick, 8000);
+            tabbyWanderTimer = setInterval(tabbyWander,   13000);
         } else {
-            pet.style.display = 'none';
-            clearInterval(petTimer); clearInterval(petIdleTimer); clearPetBubble();
+            el.style.display = 'none';
+            clearInterval(tabbyIdleTimer);
+            clearInterval(tabbyWanderTimer);
+            clearTabbyBubble();
         }
     }
 
-    function petWander() {
-        const pet = document.getElementById('virtualPet');
-        if (!pet || pet.style.display === 'none') return;
-
-        const margin = 60;
-        const navH   = 72;
-        const maxX   = window.innerWidth  - margin;
-        const maxY   = window.innerHeight - navH - margin;
-
-        const newRight = Math.random() < 0.5
-            ? margin + Math.random() * (maxX - margin)
-            : null;
-        const useBottom = Math.random() < 0.7;
-        const newY = margin + Math.random() * (maxY - margin);
-
-        // determine direction
-        const rect = pet.getBoundingClientRect();
-        const curX = rect.left + rect.width / 2;
-        const targetX = newRight !== null ? (window.innerWidth - newRight) : curX;
-        petDir = targetX > curX ? 1 : -1;
-        pet.style.setProperty('--pet-dir', petDir);
-
-        // walk
-        document.getElementById('petBody').textContent = PET_EMOJIS.walk;
-        pet.classList.add('pet-walking');
-        isPetMoving = true;
-
-        // move
-        if (newRight !== null) { pet.style.right = newRight + 'px'; pet.style.left = 'auto'; }
-        if (useBottom) { pet.style.bottom = newY + 'px'; pet.style.top = 'auto'; }
-        else           { pet.style.top    = newY + 'px'; pet.style.bottom = 'auto'; }
-
-        // stop walking after transition ends (~2.2s)
-        setTimeout(() => {
-            pet.classList.remove('pet-walking');
-            document.getElementById('petBody').textContent = PET_EMOJIS.idle;
-            isPetMoving = false;
-        }, 2400);
+    // ── POSITION ──────────────────────────────────
+    function tabbySetPos(x, y) {
+        const el = wrap();
+        const maxX = window.innerWidth  - 60;
+        const maxY = window.innerHeight - 70;
+        tabbyX = Math.max(4, Math.min(x, maxX));
+        tabbyY = Math.max(60, Math.min(y, maxY));
+        el.style.left   = tabbyX + 'px';
+        el.style.top    = tabbyY + 'px';
+        el.style.right  = 'auto';
+        el.style.bottom = 'auto';
     }
 
-    function petIdleBehavior() {
-        if (isPetMoving) return;
-        const messages = PET_MESSAGES.idle;
+    // ── STATE ─────────────────────────────────────
+    function tabbySetState(state) {
+        const el = wrap();
+        if (!el) return;
+        el.classList.remove('idle','walking','sleep','scared','bounce');
+        el.classList.add(state === 'drag' ? 'idle' : state);
+        tabbyState = state;
+        
+        // Show correct eye overlay
+        ['tabby-sleep-eyes','tabby-happy-eyes','tabby-scared-eyes'].forEach(id => {
+            const n = document.getElementById(id);
+            if (n) n.style.display = 'none';
+        });
+        const normalEyes = document.getElementById('tabby-normal-eyes');
+        if (normalEyes) normalEyes.style.display = '';
+
+        if (state === 'sleep') {
+            const s = document.getElementById('tabby-sleep-eyes');
+            if (s) s.style.display = '';
+            if (normalEyes) normalEyes.style.display = 'none';
+        } else if (state === 'happy') {
+            const h = document.getElementById('tabby-happy-eyes');
+            if (h) h.style.display = '';
+            if (normalEyes) normalEyes.style.display = 'none';
+        } else if (state === 'scared') {
+            const sc = document.getElementById('tabby-scared-eyes');
+            if (sc) sc.style.display = '';
+            if (normalEyes) normalEyes.style.display = 'none';
+        }
+    }
+
+    // ── FACING DIRECTION ──────────────────────────
+    function tabbyFace(dir) {
+        // dir: 1 = right, -1 = left
+        tabbyFaceDir = dir;
+        const svg = document.getElementById('tabby-svg');
+        if (svg) svg.style.transform = dir === 1 ? 'scaleX(-1)' : 'scaleX(1)';
+    }
+
+    // ── MOCHI STRETCH ─────────────────────────────
+    // Stretch body vertically, head lags behind (delayed)
+    function tabbyApplyStretch(dragDY) {
+        const bg = bodyG(), hg = headG();
+        if (!bg || !hg) return;
+        // dragDY: negative = lifting up (stretch), positive = pushing down (squash)
+        const stretch = Math.max(-0.45, Math.min(0.45, dragDY / 120));
+        const bodySY  = 1 + stretch * 1.2;   // body stretches more
+        const bodySX  = 1 - stretch * 0.35;  // body narrows as it stretches
+        const headTY  = stretch * 18;         // head lags (moves opposite)
+        bg.style.transform = `scaleY(${bodySY}) scaleX(${bodySX})`;
+        hg.style.transform = `translateY(${-headTY}px)`;
+    }
+
+    function tabbyResetStretch() {
+        const bg = bodyG(), hg = headG();
+        if (bg) bg.style.transform = '';
+        if (hg) hg.style.transform = '';
+    }
+
+    // ── EYE TRACKING ──────────────────────────────
+    function tabbyTrackEyes(clientX, clientY) {
+        const el = wrap();
+        if (!el || tabbyState === 'sleep' || tabbyState === 'scared') return;
+        const rect = el.getBoundingClientRect();
+        const catCX = rect.left + 32;
+        const catCY = rect.top  + 24;
+        const dx = clientX - catCX;
+        const dy = clientY - catCY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const maxShift = 2.5;
+        const shiftX = dist > 5 ? (dx / dist) * maxShift : 0;
+        const shiftY = dist > 5 ? (dy / dist) * maxShift * 0.7 : 0;
+        
+        // Left eye and Right eye bounding boxes
+        const fDir = tabbyFaceDir;
+        const eL = document.getElementById('tabby-eye-l');
+        const eR = document.getElementById('tabby-eye-r');
+        const sx = fDir === 1 ? -shiftX : shiftX;
+        
+        if (eL) { eL.setAttribute('x', 22 + sx); eL.setAttribute('y', 24 + shiftY); }
+        if (eR) { eR.setAttribute('x', 36 + sx); eR.setAttribute('y', 24 + shiftY); }
+    }
+
+    function tabbyResetEyes() {
+        const eL = document.getElementById('tabby-eye-l');
+        const eR = document.getElementById('tabby-eye-r');
+        if (eL) { eL.setAttribute('x', '22'); eL.setAttribute('y', '24'); }
+        if (eR) { eR.setAttribute('x', '36'); eR.setAttribute('y', '24'); }
+    }
+
+    // ── WANDER ────────────────────────────────────
+    function tabbyWander() {
+        if (!tabbyEnabled || tabbyDragging || tabbyState === 'sleep') return;
+        const navH  = 76;
+        const margin = 20;
+        const maxX  = window.innerWidth  - 60 - margin;
+        const maxY  = window.innerHeight - navH - 60;
+        const destX = margin + Math.random() * (maxX - margin);
+        const destY = 80     + Math.random() * (maxY - 80);
+        tabbyFace(destX > tabbyX ? 1 : -1);
+        tabbySetState('walking');
+        // Move smoothly over ~1.5s via rAF
+        const startX = tabbyX, startY = tabbyY;
+        const dur = 1400 + Math.random() * 600;
+        const t0  = performance.now();
+        function step(now) {
+            if (tabbyDragging || !tabbyEnabled) return;
+            const p = Math.min(1, (now - t0) / dur);
+            const ease = p < 0.5 ? 2*p*p : -1+(4-2*p)*p; // ease-in-out
+            tabbySetPos(startX + (destX-startX)*ease, startY + (destY-startY)*ease);
+            updateBubblePosition();
+            if (p < 1) { requestAnimationFrame(step); }
+            else {
+                // Check wall scratch
+                if (tabbyX <= 8 || tabbyX >= window.innerWidth-70) {
+                    tabbySetState('idle'); // will scratch after tiny delay
+                    setTimeout(() => { if(!tabbyDragging) tabbyWallScratch(); }, 200);
+                } else {
+                    tabbySetState('idle');
+                    tabbyIdleTicks = 0;
+                }
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    function tabbyWallScratch() {
+        if (tabbyDragging) return;
+        tabbySetState('idle');
+        // Face the wall
+        tabbyFace(tabbyX < 30 ? -1 : 1);
+        tabbySayRandom('wall');
+        // Arm scratch animation placeholder since we merged the arms to body
+        const bg = document.getElementById('tabby-body-group');
+        if (bg) {
+            let count = 0;
+            const scratch = setInterval(() => {
+                bg.style.transform = count % 2 === 0
+                    ? (tabbyX < 30 ? 'translateX(-2px)' : 'translateX(2px)')
+                    : '';
+                count++;
+                if (count > 5) { clearInterval(scratch); bg.style.transform = ''; }
+            }, 200);
+        }
+    }
+
+    // ── IDLE TICK ─────────────────────────────────
+    function tabbyIdleTick() {
+        if (!tabbyEnabled || tabbyDragging) return;
+        tabbyIdleTicks++;
         const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
         const today = diary.find(d => d.date === todayStr);
-
-        let pool = [...messages];
+        let pool = [...TABBY_MESSAGES.idle];
         if (today) {
-            if (today.calories > (parseInt(localStorage.getItem('tgt_cal'))||2000)) pool = [...pool, ...PET_MESSAGES.overcal];
-            else pool = [...pool, ...PET_MESSAGES.goodcal];
-            if ((today.steps||0) >= 8000) pool = [...pool, ...PET_MESSAGES.goodstep];
-            else if ((today.steps||0) < 3000) pool = [...pool, ...PET_MESSAGES.lowstep];
+            if (today.calories > (parseInt(localStorage.getItem('tgt_cal'))||2000)) pool = [...pool, ...TABBY_MESSAGES.overcal];
+            else pool = [...pool, ...TABBY_MESSAGES.goodcal];
+            if ((today.steps||0) >= 8000) pool = [...pool, ...TABBY_MESSAGES.goodstep];
+            else if ((today.steps||0) < 3000) pool = [...pool, ...TABBY_MESSAGES.lowstep];
         }
-        // check streak
-        const streak = getStreakCount();
-        if (streak >= 3) pool = [...pool, ...PET_MESSAGES.streak];
+        if (getStreakCount() >= 3) pool = [...pool, ...TABBY_MESSAGES.streak];
 
-        petSay(pool[Math.floor(Math.random() * pool.length)]);
-        // random emotion face
-        const faces = [PET_EMOJIS.idle, PET_EMOJIS.happy, PET_EMOJIS.sleep];
-        document.getElementById('petBody').textContent = faces[Math.floor(Math.random()*faces.length)];
-        setTimeout(() => { if(!isPetMoving) document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 3000);
+        // Go to sleep after 3 idle ticks (~24s) of no activity
+        if (tabbyIdleTicks >= 3 && tabbyState === 'idle') {
+            tabbySetState('sleep');
+            tabbySay('Zzz... 💤');
+            return;
+        }
+        if (tabbyState !== 'sleep') {
+            tabbySay(pool[Math.floor(Math.random() * pool.length)]);
+        }
     }
 
-    function petSayRandom(category) {
-        const pool = PET_MESSAGES[category] || PET_MESSAGES.idle;
-        petSay(pool[Math.floor(Math.random() * pool.length)]);
-        document.getElementById('petBody').textContent = PET_EMOJIS.happy;
-        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 3000);
+    // ── DRAG (touch + mouse) ──────────────────────
+    function tabbyOnTouchStart(e) {
+        e.preventDefault();
+        const t = e.touches[0];
+        tabbyStartDrag(t.clientX, t.clientY);
+    }
+    function tabbyOnTouchMove(e) {
+        e.preventDefault();
+        if (!tabbyDragging) return;
+        const t = e.touches[0];
+        tabbyMoveDrag(t.clientX, t.clientY);
+    }
+    function tabbyOnTouchEnd(e) {
+        e.preventDefault();
+        if (!tabbyDragging && (Date.now()-tabbyDragStart) < 220) { tabbyTapped(); return; }
+        tabbyEndDrag();
+    }
+    function tabbyOnMouseDown(e) {
+        tabbyStartDrag(e.clientX, e.clientY);
+        const onMove = ev => tabbyMoveDrag(ev.clientX, ev.clientY);
+        const onUp   = () => { tabbyEndDrag(); document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup',   onUp);
     }
 
-    function petSay(msg) {
-        const bubble = document.getElementById('petBubble');
+    function tabbyStartDrag(cx, cy) {
+        clearInterval(tabbyWanderTimer); clearInterval(tabbyIdleTimer);
+        tabbyDragging  = true;
+        tabbyDragStart = Date.now();
+        tabbyDragOX    = cx - tabbyX;
+        tabbyDragOY    = cy - tabbyY;
+        tabbyLastX     = cx; tabbyLastY = cy;
+        tabbyVelX = 0; tabbyVelY = 0;
+        // Wake up if sleeping
+        if (tabbyState === 'sleep') tabbySetState('idle');
+        tabbySayRandom('drag');
+        tabbySetState('drag');
+        // Show scared eyes while being lifted
+        const sc = document.getElementById('tabby-scared-eyes');
+        if (sc) sc.style.display = '';
+        const norm = document.getElementById('tabby-normal-eyes');
+        if(norm) norm.style.display='none';
+    }
+
+    function tabbyMoveDrag(cx, cy) {
+        if (!tabbyDragging) return;
+        const newX = cx - tabbyDragOX;
+        const newY = cy - tabbyDragOY;
+        // Velocity for throw
+        tabbyVelX = cx - tabbyLastX;
+        tabbyVelY = cy - tabbyLastY;
+        tabbyLastX = cx; tabbyLastY = cy;
+        tabbySetPos(newX, newY);
+        updateBubblePosition();
+        // Mochi stretch: based on vertical velocity
+        tabbyApplyStretch(-tabbyVelY * 3);
+        // Face drag direction
+        if (Math.abs(tabbyVelX) > 1) tabbyFace(tabbyVelX > 0 ? 1 : -1);
+    }
+
+    function tabbyEndDrag() {
+        tabbyDragging = false;
+        tabbyResetStretch();
+        // Bounce landing
+        tabbySetState('bounce');
+        setTimeout(() => tabbySetState('idle'), 600);
+        tabbySayRandom('drop');
+        tabbyResetEyes();
+        tabbyIdleTicks = 0;
+        // Restart timers
+        tabbyIdleTimer   = setInterval(tabbyIdleTick, 8000);
+        tabbyWanderTimer = setInterval(tabbyWander,   13000);
+        spawnParticle('⭐', tabbyX + 32, tabbyY);
+    }
+
+    function tabbyTapped() {
+        tabbyIdleTicks = 0;
+        if (tabbyState === 'sleep') { tabbySetState('idle'); tabbySay('*yawn* 😴 You woke me!'); return; }
+        tabbySetState('happy');
+        tabbySayRandom('tap');
+        spawnParticle('💜', tabbyX + 32, tabbyY - 10);
+        setTimeout(() => tabbySetState('idle'), 1800);
+    }
+
+    // ── PARTICLES ─────────────────────────────────
+    function spawnParticle(emoji, x, y) {
+        const p = document.createElement('div');
+        p.className = 'tabby-particle';
+        p.textContent = emoji;
+        p.style.left = x + 'px';
+        p.style.top  = y + 'px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1000);
+    }
+
+    // ── SPEECH BUBBLE (WITH TYPING EFFECT) ────────
+    function tabbySay(msg) {
+        const bubble = document.getElementById('tabbyBubble');
         if (!bubble) return;
-        clearPetBubble();
-        bubble.innerHTML = msg;
+        clearTabbyBubble();
+
+        bubble.textContent = '';
         bubble.classList.add('show');
-        petBubbleTimer = setTimeout(() => bubble.classList.remove('show'), 4500);
+        updateBubblePosition();
+
+        let i = 0;
+        const posI = setInterval(updateBubblePosition, 60);
+
+        tabbyTypingTimer = setInterval(() => {
+            bubble.textContent += msg.charAt(i);
+            i++;
+            updateBubblePosition();
+            if (i >= msg.length) {
+                clearInterval(tabbyTypingTimer);
+                // Hold bubble for 3 seconds after finished typing
+                tabbyBubbleTimer = setTimeout(() => {
+                    bubble.classList.remove('show');
+                    clearInterval(posI);
+                }, 3000);
+            }
+        }, 40); // 40ms per character
     }
 
-    function clearPetBubble() {
-        clearTimeout(petBubbleTimer);
-        const b = document.getElementById('petBubble');
-        if (b) b.classList.remove('show');
+    function tabbySayRandom(cat) {
+        const pool = TABBY_MESSAGES[cat] || TABBY_MESSAGES.idle;
+        tabbySay(pool[Math.floor(Math.random() * pool.length)]);
     }
 
-    function petTapped() {
-        const pet = document.getElementById('virtualPet');
-        pet.classList.add('pet-bounce');
-        pet.addEventListener('animationend', () => pet.classList.remove('pet-bounce'), { once: true });
-        document.getElementById('petBody').textContent = PET_EMOJIS.surprised;
-        petSay(PET_MESSAGES.tap[Math.floor(Math.random() * PET_MESSAGES.tap.length)]);
-        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.love; }, 400);
-        setTimeout(() => { document.getElementById('petBody').textContent = PET_EMOJIS.idle; }, 2500);
+    function clearTabbyBubble() {
+        clearInterval(tabbyTypingTimer);
+        clearTimeout(tabbyBubbleTimer);
+        const b = document.getElementById('tabbyBubble');
+        if (b) {
+            b.classList.remove('show');
+            b.textContent = '';
+        }
     }
 
+    function updateBubblePosition() {
+        const bubble = document.getElementById('tabbyBubble');
+        if (!bubble || !bubble.classList.contains('show')) return;
+        const bw = bubble.offsetWidth  || 150;
+        const bh = bubble.offsetHeight || 50;
+        let bx = tabbyX + 32 - bw / 2;
+        let by = tabbyY - bh - 12;
+        bx = Math.max(6, Math.min(bx, window.innerWidth - bw - 6));
+        by = Math.max(60, by);
+        bubble.style.left = bx + 'px';
+        bubble.style.top  = by + 'px';
+    }
+
+    // ── STREAK ────────────────────────────────────
     function getStreakCount() {
         const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
         if (!diary.length) return 0;
-        let streak = 0, checkDate = new Date(diary[0].date); checkDate.setHours(0,0,0,0);
-        const today = new Date(todayStr); today.setHours(0,0,0,0);
-        if ((today - checkDate)/(86400000) > 1) return 0;
-        for (let i=0; i<diary.length; i++) {
-            const d = new Date(diary[i].date); d.setHours(0,0,0,0);
-            if (d.getTime()===checkDate.getTime()) { streak++; checkDate.setDate(checkDate.getDate()-1); }
-            else if (d.getTime() > checkDate.getTime()) continue;
+        let streak = 0, check = new Date(diary[0].date); check.setHours(0,0,0,0);
+        const today2 = new Date(todayStr); today2.setHours(0,0,0,0);
+        if ((today2 - check) / 86400000 > 1) return 0;
+        for (const d of diary) {
+            const dt = new Date(d.date); dt.setHours(0,0,0,0);
+            if (dt.getTime() === check.getTime()) { streak++; check.setDate(check.getDate()-1); }
+            else if (dt.getTime() > check.getTime()) continue;
             else break;
         }
         return streak;
     }
 
-    // Hook pet reactions into save events (called after each save)
+    // ── GLOBAL EYE TRACKING + TOUCH/MOUSE EVENTS ──
+    document.addEventListener('mousemove', e => {
+        if (!tabbyEnabled || tabbyDragging) return;
+        tabbyTrackEyes(e.clientX, e.clientY);
+    });
+    document.addEventListener('touchmove', e => {
+        if (!tabbyEnabled || tabbyDragging) return;
+        tabbyTrackEyes(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    // Wire drag events onto the wrap element (done after DOM ready)
+    function tabbyBindEvents() {
+        const el = wrap();
+        if (!el) return;
+        el.addEventListener('touchstart', tabbyOnTouchStart, { passive: false });
+        el.addEventListener('touchmove',  tabbyOnTouchMove,  { passive: false });
+        el.addEventListener('touchend',   tabbyOnTouchEnd,   { passive: false });
+        el.addEventListener('mousedown',  tabbyOnMouseDown);
+    }
+
+    // ── HOOK INTO SAVE EVENTS ─────────────────────
     function petReactToLog(type) {
-        const pet = document.getElementById('virtualPet');
-        if (!pet || pet.style.display === 'none') return;
-        if (type === 'diary') petSayRandom('logged');
-        else if (type === 'bmi') petSayRandom('bmi');
-        else if (type === 'water') petSayRandom('water');
+        if (!tabbyEnabled) return;
+        tabbyIdleTicks = 0;
+        if (tabbyState === 'sleep') tabbySetState('idle');
+        if (type === 'diary') { tabbySayRandom('logged'); spawnParticle('🌟', tabbyX+32, tabbyY); }
+        else if (type === 'bmi')   tabbySayRandom('bmi');
+        else if (type === 'water') tabbySayRandom('water');
     }
 
     // ── SHARE STATS ───────────────────────────────
@@ -1452,7 +1853,7 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         const activity = parseFloat(document.getElementById('profileActivity').value);
         const bmiHist  = JSON.parse(localStorage.getItem('bmiHistory')||'[]');
         
-        updateETA(); // Calculate ETA Whenever TDEE Updates
+        updateETA();
 
         if (!bmiHist.length || !age) {
             document.getElementById('tdeeBanner').style.display='none';
@@ -1482,21 +1883,19 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         const bmiHist  = JSON.parse(localStorage.getItem('bmiHistory')||'[]').sort((a,b)=>new Date(b.date)-new Date(a.date));
         const etaEl    = document.getElementById('etaDisplay');
 
-        // ── Guard: need both a target and at least one BMI entry ──
         if (!targetWt || bmiHist.length === 0) {
             etaEl.innerHTML = "Set target weight &amp; log BMI for ETA.";
             return;
         }
 
         const currentWt = bmiHist[0].weight;
-        const diff      = currentWt - targetWt; // positive = need to lose, negative = need to gain
+        const diff      = currentWt - targetWt;
 
         if (Math.abs(diff) < 0.2) {
             etaEl.innerHTML = "🎉 Target Reached! Maintain the good work!";
             return;
         }
 
-        // ── Guard: need complete profile for TDEE ──
         const age      = parseInt(document.getElementById('profileAge').value);
         const gender   = document.getElementById('profileGender').value;
         const activity = parseFloat(document.getElementById('profileActivity').value);
@@ -1507,11 +1906,9 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
 
         const { tdee } = calcTDEE(currentWt, bmiHist[0].height, age, gender, activity);
 
-        // ── Use average actual intake if we have diary data, else fall back to target ──
         const diary = JSON.parse(localStorage.getItem('diaryHistory')||'[]');
         let avgIntake = 0;
         if (diary.length >= 3) {
-            // use last 14 days of entries for the average
             const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 14);
             const recent = diary.filter(d => new Date(d.date) >= cutoff);
             const pool   = recent.length >= 3 ? recent : diary.slice(0, Math.min(diary.length, 14));
@@ -1520,7 +1917,6 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             avgIntake = parseInt(document.getElementById('targetCalories').value) || 2000;
         }
 
-        // ── Also subtract average steps burn from net intake ──
         let avgStepsBurn = 0;
         if (diary.length >= 3) {
             const pool = diary.slice(0, Math.min(diary.length, 14));
@@ -1529,9 +1925,8 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
         }
 
         const netDailyIntake = avgIntake - avgStepsBurn;
-        const rawDeficit     = tdee - netDailyIntake; // positive = deficit (losing), negative = surplus (gaining)
+        const rawDeficit     = tdee - netDailyIntake; 
 
-        // ── Check direction matches goal ──
         if (diff > 0 && rawDeficit <= 0) {
             etaEl.innerHTML = `⚠️ Your intake (~${Math.round(avgIntake)} kcal) exceeds TDEE (${tdee} kcal). No weight loss expected at current intake.`;
             return;
@@ -1541,26 +1936,22 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             return;
         }
 
-        // ── Safety cap: max 1 kg/week loss (0.143 kg/day), max 0.5 kg/week gain ──
-        // 7700 kcal = 1 kg fat
         const KCAL_PER_KG  = 7700;
-        const MAX_LOSS_DAY = 0.143; // 1 kg/week
-        const MAX_GAIN_DAY = 0.071; // 0.5 kg/week
+        const MAX_LOSS_DAY = 0.143; 
+        const MAX_GAIN_DAY = 0.071; 
 
-        const rawDailyChange = rawDeficit / KCAL_PER_KG; // kg/day from deficit alone
+        const rawDailyChange = rawDeficit / KCAL_PER_KG; 
 
-        // Optimistic (deficit/surplus at full calculated rate, capped at safe ceiling)
         const optimisticRate = diff > 0
             ? Math.min(rawDailyChange, MAX_LOSS_DAY)
             : Math.max(rawDailyChange, -MAX_GAIN_DAY);
 
-        // Conservative: 60% of optimistic (plateaus, weekends, real life)
         const conservativeRate = optimisticRate * 0.6;
 
         const daysOptimistic    = Math.abs(diff / optimisticRate);
         const daysConservative  = Math.abs(diff / conservativeRate);
 
-        if (daysOptimistic > 1825) { // > 5 years
+        if (daysOptimistic > 1825) { 
             etaEl.innerHTML = `ETA > 5 years at this rate. Consider adjusting your target or intake.`;
             return;
         }
@@ -1610,9 +2001,15 @@ Use whole numbers only. Do not include units inside the values. Start tracking n
             document.getElementById('bmiResult').style.display='none';
             document.getElementById('tdeeBanner').style.display='none';
             document.getElementById('tdeePlaceholder').style.display='block';
-            // reset pet
+            // reset Tabby
             const petToggle = document.getElementById('petToggle');
-            if (petToggle && petToggle.checked) { petToggle.checked = false; togglePet(); }
+            if (petToggle && petToggle.checked) {
+                petToggle.checked = false;
+                tabbyEnabled = false;
+                clearInterval(tabbyIdleTimer); clearInterval(tabbyWanderTimer);
+                clearTabbyBubble();
+                const el = wrap(); if (el) el.style.display = 'none';
+            }
             showToast('All data cleared.');
         }
     }
